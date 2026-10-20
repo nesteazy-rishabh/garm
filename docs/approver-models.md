@@ -8,6 +8,7 @@ figures (†) were checked against the primary posts on 2026-10-20. The approval
 | Model | P(approve benign) | P(approve malicious) | Basis |
 |---|---|---|---|
 | oracle | 1.00 | 0.00 | Upper bound: knows ground truth. |
+| rubber_stamp_93 | 0.93 | 0.93 | The pre-registered H3 approver: it approves 93% of all cards, whatever their content. It is used for the H3 test exactly as registered. |
 | rubber_stamp | 0.95 (0.90–0.99) | 0.86 (0.83–0.95) | Users approve about 93% of all permission prompts in Claude Code (Anthropic, 2026-03-25 and 2026-05-25)†. That is an overall approval rate, not a false-approval rate. In a study of 1,053 testers, humans caught 13.6% of dangerous commands swapped into a session (Anthropic, 2026-08-07)†. |
 | vigilant_human | 0.95 | 0.60 (0.35–0.80) | Under per-action approval, 40.3% of overreach actions were approved, so about 60% were caught (arXiv 2608.27443, 113 participants). The 0.60 approval rate for malicious cards is set conservatively and swept over the stated range. |
 | fatigued_human | 0.95 | 1 − catch(n) | catch(n) = 0.05 + (0.17 − 0.05)·exp(−n/40), where n is the number of cards already seen in a session. This fits the reported decline from about 17% caught early to about 5% after 50 or more prompts (Anthropic, 2026-08-07)†. It follows the form of 2606.08919, which assumes a perfect starting reviewer instead. |

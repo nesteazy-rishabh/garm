@@ -38,6 +38,7 @@ class ApproverModel:
 
 MODELS = {
     "oracle": ApproverModel("oracle", 1.0, 0.0),
+    "rubber_stamp_93": ApproverModel("rubber_stamp_93", 0.93, 0.93),  # exactly as pre-registered in H3
     "rubber_stamp": ApproverModel("rubber_stamp", 0.95, 0.86),
     "vigilant_human": ApproverModel("vigilant_human", 0.95, 0.60),
     "fatigued_human": ApproverModel("fatigued_human", 0.95, 0.83, fatigue_tau=40.0, catch_floor=0.05),
