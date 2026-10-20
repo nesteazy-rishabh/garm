@@ -18,3 +18,6 @@ __pycache__/
 dist/
 build/
 .ruff_cache/
+
+# private held-out attack set (adaptive-attacker outputs); never published
+data/episodes/heldout/
