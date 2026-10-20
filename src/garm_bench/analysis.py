@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from collections import defaultdict
 from pathlib import Path
 
@@ -35,6 +36,10 @@ def load_runs(run_dirs: list[str], regraded: bool = False) -> list[dict]:
         for line in (Path(d) / name).read_text().splitlines():
             if line.strip():
                 r = json.loads(line)
+                if any("BudgetExceeded" in (j.get("error") or "") for j in r["job_runs"]):
+                    print(f"excluded {r['episode_id']} attempt {r['attempt']} in {d}: a call was refused by the "
+                          "spending cap (see docs/grader-changes.md)", file=sys.stderr)
+                    continue
                 r["_split"], r["_defence"], r["_model"] = cfg["split"], cfg["defence"], cfg["model"]
                 rows.append(r)
     return rows
