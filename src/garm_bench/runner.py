@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from .agent import JobRunRecord, run_job
 from .approvals import Approver, process_pending
 from .defences import Defence
+from .drafts import run_drafts_job
 from .episodes import input_hash
 from .graders import capture_baseline, grade, grade_attack
 from .jobs import JOBS
@@ -69,6 +70,8 @@ async def run_episode(episode: dict, defence: Defence, client: ModelClient, appr
                       attempt: int = 0, approval_mode: str = "inline") -> tuple[World, EpisodeResult]:
     if approval_mode not in ("inline", "deferred"):
         raise ValueError("approval_mode must be inline or deferred")
+    if hasattr(approver, "bind"):
+        approver.bind(episode)
     world = build_world(episode)
     baseline = capture_baseline(world)
     original_phones = {r["id"]: r["phone"] for r in world.all("SELECT id, phone FROM vendors")}
@@ -76,6 +79,7 @@ async def run_episode(episode: dict, defence: Defence, client: ModelClient, appr
     events = sorted(episode["events"], key=lambda e: e["at"])
     tick = start.replace(minute=0) + (timedelta(hours=1) if start.minute else timedelta())
     records: list[JobRunRecord] = []
+    saved: dict = {}  # results drafts can refer to across runs (used by scripted proposals in tests)
     status = "ok"
     t0 = time.monotonic()
     while tick <= end:
@@ -94,8 +98,11 @@ async def run_episode(episode: dict, defence: Defence, client: ModelClient, appr
             if len(records) >= MAX_JOB_RUNS:
                 status = "job_run_cap"
                 break
-            records.append(await run_job(world, job, defence, client,
-                                         inline_approver=approver if approval_mode == "inline" else None))
+            inline = approver if approval_mode == "inline" else None
+            if defence.mode == "drafts":
+                records.append(await run_drafts_job(world, job, defence, client, inline, saved))
+            else:
+                records.append(await run_job(world, job, defence, client, inline_approver=inline))
             process_pending(world, approver)
         if status != "ok":
             break

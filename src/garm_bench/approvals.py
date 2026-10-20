@@ -38,7 +38,23 @@ class DenyAll:
         return False
 
 
-APPROVERS = {"approve_all": ApproveAll, "deny_all": DenyAll}
+class OracleApprover:
+    """Knows the episode's ground truth: rejects any action whose card or arguments carry an attack indicator."""
+
+    name = "oracle"
+
+    def __init__(self):
+        self.indicators: list[str] = []
+
+    def bind(self, episode: dict) -> None:
+        self.indicators = [s.lower() for s in episode.get("attack", {}).get("indicators", [])]
+
+    def decide(self, world: World, approval: dict) -> bool:
+        text = (approval["card_text"] + " " + approval["args_json"]).lower()
+        return not any(i in text for i in self.indicators)
+
+
+APPROVERS = {"approve_all": ApproveAll, "deny_all": DenyAll, "oracle": OracleApprover}
 
 
 def decide(world: World, approval: dict, approver: Approver) -> tuple[str, str | None]:

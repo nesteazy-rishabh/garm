@@ -68,3 +68,30 @@ class ScriptedModel:
         self._n += 1
         call = ToolCall(id=f"oracle-{self._n}", name=step["tool"], input=self._resolve(step.get("args", {})))
         return ModelTurn(text="", tool_calls=[call], stop_reason="tool_use")
+
+
+class ScriptedDraftModel:
+    """Turns a tool-call script into drafts-mode proposals: the write steps of each job run, in order."""
+
+    model_id = "scripted-drafts"
+
+    def __init__(self, script: dict[str, list[list[dict]]]):
+        from ..tools import REGISTRY
+
+        self.script = script
+        self.registry = REGISTRY
+        self.runs_seen: dict[str, int] = {}
+        self._job = ""
+
+    def on_job_start(self, job: str) -> None:
+        self._job = job
+
+    async def generate(self, system, tools, messages, max_tokens) -> ModelTurn:
+        idx = self.runs_seen.get(self._job, 0)
+        self.runs_seen[self._job] = idx + 1
+        runs = self.script.get(self._job, [])
+        steps = runs[idx] if idx < len(runs) else []
+        proposals = [{"action": s["tool"], "args": s.get("args", {}), **({"save": s["save"]} if "save" in s else {})}
+                     for s in steps if self.registry[s["tool"]].writes]
+        return ModelTurn(text=json.dumps({"proposals": proposals, "summary": "scripted"}), tool_calls=[],
+                         stop_reason="end_turn")

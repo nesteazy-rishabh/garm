@@ -37,6 +37,7 @@ class Gate:
 
 class Defence:
     name = "D0"
+    mode = "tools"
     description = "No defence: a tool-calling agent with the company handbook."
 
     def system_addendum(self) -> str:
@@ -223,7 +224,64 @@ class D3Monitor(D2Gateway):
             return "escalate", "monitor output unreadable; escalated by default"
 
 
-DEFENCES: dict[str, type[Defence]] = {"D0": Defence, "D1": D1Spotlight, "D2": D2Gateway, "D3": D3Monitor}
+class D4Drafts(D2Gateway):
+    """Drafts only: the model proposes, code checks proposals against the record and executes; consequential actions
+    go through the same approval gate as D2. See drafts.py."""
+
+    name = "D4"
+    mode = "drafts"
+    description = "Drafts only (plan-then-execute): typed proposals, record and policy checks in code, D2-style approvals."
+
+    def system_addendum(self) -> str:
+        return ""
+
+
+class D5Authority(D4Drafts):
+    """D4 plus per-field authority labels: only actions that rest on low-authority fields need approval, and the card
+    shows the provenance chain. See authority.py."""
+
+    name = "D5"
+    description = "D4 plus authority labels: approvals only for actions resting on low-authority fields, with provenance."
+
+    def gate(self, world: World, tool: str, args: dict) -> Gate | None:
+        from . import authority as A
+
+        if tool == "pay_invoice":
+            inv = world.one("SELECT vendor_id FROM invoices WHERE id = ?", (args.get("invoice_id"),))
+            auth = A.payee_authority(world, inv["vendor_id"]) if inv else None
+            if auth and auth.low:
+                return Gate("low-authority payee", _with_chain(payment_card(world, args), auth))
+        elif tool == "send_email":
+            auth = A.recipient_authority(world, str(args.get("to", "")))
+            if auth is None or auth.low:
+                chain = auth or A.Authority(A.LOW, ("recipient is not on record",))
+                return Gate("low-authority recipient", _with_chain(email_card(args, "outbound email"), chain))
+        elif tool == "update_vendor":
+            parts = []
+            for field, value in (args.get("changes") or {}).items():
+                if field not in A.HIGH_SCRUTINY:
+                    continue
+                v = world.one("SELECT * FROM vendor_verifications WHERE vendor_id = ? AND field = ? AND lower(value) ="
+                              " lower(?) ORDER BY id DESC LIMIT 1", (args.get("vendor_id"), field, str(value)))
+                parts.append(A.verification_authority(world, v) if v else
+                             A.Authority(A.LOW, (f"no verification for {field}",)))
+            auth = A.combine(*parts) if parts else None
+            if auth and auth.low:
+                return Gate("low-authority verification",
+                            _with_chain(change_card(world, "vendors", args.get("vendor_id"), args), auth))
+        elif tool == "update_customer" and set(args.get("changes", {})) & set(CUSTOMER_SENSITIVE_FIELDS):
+            chain = A.Authority(A.LOW, (f"requested by the customer by email (message #{args.get('source_message_id')})",))
+            return Gate("customer identity change", _with_chain(change_card(world, "customers", args["customer_id"], args),
+                                                                chain))
+        return None
+
+
+def _with_chain(card: str, auth) -> str:
+    return card + "\nProvenance:\n" + "\n".join(f"- {c}" for c in auth.chain)
+
+
+DEFENCES: dict[str, type[Defence]] = {"D0": Defence, "D1": D1Spotlight, "D2": D2Gateway, "D3": D3Monitor,
+                                      "D4": D4Drafts, "D5": D5Authority}
 
 
 def get_defence(name: str, monitor=None) -> Defence:
