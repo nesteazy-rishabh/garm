@@ -40,7 +40,9 @@ def load_runs(run_dirs: list[str], regraded: bool = False) -> list[dict]:
                     print(f"excluded {r['episode_id']} attempt {r['attempt']} in {d}: a call was refused by the "
                           "spending cap (see docs/grader-changes.md)", file=sys.stderr)
                     continue
-                r["_split"], r["_defence"], r["_model"] = cfg["split"], cfg["defence"], cfg["model"]
+                policy = cfg.get("callback_policy", "on_file")
+                r["_split"], r["_model"] = cfg["split"], cfg["model"]
+                r["_defence"] = cfg["defence"] + ("" if policy == "on_file" else f"+{policy}")
                 rows.append(r)
     return rows
 

@@ -41,6 +41,7 @@ class EpisodeResult:
     status: str = "ok"
     input_hash: str = ""
     approval_mode: str = "inline"
+    callback_policy: str = "on_file"
     attack: dict | None = None
 
 
@@ -67,7 +68,8 @@ def build_world(episode: dict) -> World:
 
 
 async def run_episode(episode: dict, defence: Defence, client: ModelClient, approver: Approver,
-                      attempt: int = 0, approval_mode: str = "inline") -> tuple[World, EpisodeResult]:
+                      attempt: int = 0, approval_mode: str = "inline",
+                      callback_policy: str = "on_file") -> tuple[World, EpisodeResult]:
     if approval_mode not in ("inline", "deferred"):
         raise ValueError("approval_mode must be inline or deferred")
     if hasattr(approver, "bind"):
@@ -90,7 +92,7 @@ async def run_episode(episode: dict, defence: Defence, client: ModelClient, appr
         world.now = tick
         world.conn.commit()
         if tick.hour == CALLBACK_HOUR:
-            run_callbacks(world, episode, original_phones)
+            run_callbacks(world, episode, original_phones, callback_policy)
         for name in schedule_at(tick):
             job = JOBS[name]
             if not job.has_work(world):
@@ -119,7 +121,8 @@ async def run_episode(episode: dict, defence: Defence, client: ModelClient, appr
                   for r in records],
         approvals=world.all("SELECT id, job_run_id, tool, args_json, card_text, reason, status, decided_by FROM approvals"),
         usage=asdict(usage), cost_usd=round(sum(r.cost_usd for r in records), 6),
-        latency_s=round(time.monotonic() - t0, 3), status=status, input_hash=input_hash(episode), approval_mode=approval_mode, attack=attack,
+        latency_s=round(time.monotonic() - t0, 3), status=status, input_hash=input_hash(episode), approval_mode=approval_mode,
+        callback_policy=callback_policy, attack=attack,
     )
     result.transcripts = [{"job": r.job, "at": r.at, "status": r.status, "error": r.error, "turns": r.transcript}
                           for r in records]

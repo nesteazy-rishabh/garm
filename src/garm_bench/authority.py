@@ -57,7 +57,12 @@ def verification_authority(world: World, verification: dict) -> Authority:
     if verification.get("via_phone") is None:
         what = f"{verification['field']} verified by {verification['verified_by']} ({verification['method']})"
         return Authority(HIGH, (what,))
-    phone_write = _last_write(world, "vendors", verification["vendor_id"], "phone", before=verification["verified_at"])
+    # The number that was actually called, which need not be the one on file (a known-good callback policy calls an
+    # older number). Its authority is that of the write that put this value on file.
+    phone_write = world.one(
+        "SELECT * FROM field_writes WHERE table_name = 'vendors' AND row_id = ? AND field = 'phone' AND new_value = ? "
+        "AND at <= ? ORDER BY id DESC LIMIT 1",
+        (str(verification["vendor_id"]), verification["via_phone"], verification["verified_at"]))
     head = (f"{verification['field']} verified {verification['verified_at']} by callback to "
             f"{verification['via_phone']}")
     if phone_write is None or phone_write["writer_kind"] in ("seed", "staff"):

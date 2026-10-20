@@ -22,6 +22,7 @@ from .defences import DEFENCES, get_defence
 from .episodes import DATA_DIR, input_hash, load_episodes
 from .models.scripted import NullModel, ScriptedModel
 from .runner import run_episode
+from .staff import CALLBACK_POLICIES
 from .stats import summarize
 
 ROOT = DATA_DIR.parent
@@ -204,7 +205,7 @@ def cmd_spend(args) -> int:
 
 
 async def _run_all(episodes, defence_name, client, approver_name, repeats, concurrency, out_dir: Path,
-                   approval_mode: str, monitor=None):
+                   approval_mode: str, monitor=None, callback_policy: str = "on_file"):
     sem = asyncio.Semaphore(concurrency)
     results = []
     (out_dir / "transcripts").mkdir(parents=True, exist_ok=True)
@@ -212,7 +213,7 @@ async def _run_all(episodes, defence_name, client, approver_name, repeats, concu
     async def one(ep, attempt):
         async with sem:
             world, r = await run_episode(ep, get_defence(defence_name, monitor), client, APPROVERS[approver_name](),
-                                         attempt, approval_mode)
+                                         attempt, approval_mode, callback_policy)
             row = asdict(r)
             results.append(row)
             with open(out_dir / "results.jsonl", "a") as f:  # noqa: ASYNC230 -- small append per episode
@@ -249,11 +250,12 @@ def cmd_run(args) -> int:
 
     episodes = load_episodes(args.split, args.episodes)
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    out_dir = ROOT / "runs" / f"{stamp}-{args.split}-{args.defence}-{args.model}"
+    policy = "" if args.callback_policy == "on_file" else f"+{args.callback_policy}"
+    out_dir = ROOT / "runs" / f"{stamp}-{args.split}-{args.defence}{policy}-{args.model}"
     out_dir.mkdir(parents=True)
     ledger = Ledger(LEDGER_PATH, args.max_spend, label=out_dir.name)
     config = {"split": args.split, "defence": args.defence, "model": args.model, "effort": args.effort,
-              "approver": args.approver, "approval_mode": args.approval_mode, "monitor_model": args.monitor_model or (args.model if args.defence == "D3" else None), "repeats": args.repeats, "episodes": [e["id"] for e in episodes],
+              "approver": args.approver, "approval_mode": args.approval_mode, "monitor_model": args.monitor_model or (args.model if args.defence == "D3" else None), "repeats": args.repeats, "callback_policy": args.callback_policy, "episodes": [e["id"] for e in episodes],
               "max_spend_usd": args.max_spend, "prices": meta, "started": stamp}
     (out_dir / "config.json").write_text(json.dumps(config, indent=2))
     print(f"running {len(episodes)} episodes x {args.repeats} on {args.model} under {args.defence}; "
@@ -268,7 +270,8 @@ def cmd_run(args) -> int:
         monitor = AnthropicModel(m, prices[m], ledger, effort="low")
     try:
         results, errors = asyncio.run(_run_all(episodes, args.defence, client, args.approver, args.repeats,
-                                               args.concurrency, out_dir, args.approval_mode, monitor))
+                                               args.concurrency, out_dir, args.approval_mode, monitor,
+                                               args.callback_policy))
     finally:
         ledger.close()
     summary = summarize(results) | {"ledger": ledger.summary(), "errors": [repr(e) for e in errors]}
@@ -336,6 +339,8 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--effort", default=None, choices=["low", "medium", "high", "xhigh", "max"])
     r.add_argument("--approver", default="approve_all", choices=sorted(APPROVERS))
     r.add_argument("--approval-mode", default="inline", choices=["inline", "deferred"])
+    r.add_argument("--callback-policy", default="on_file", choices=list(CALLBACK_POLICIES),
+                   help="staff callback process; known_good and known_good_strict are D6 (docs/design-d6.md)")
     r.add_argument("--monitor-model", default=None, help="D3 monitor model (default: the agent's model)")
     r.add_argument("--repeats", type=int, default=1)
     r.add_argument("--concurrency", type=int, default=4)
