@@ -118,7 +118,8 @@ The data behind the figure is in `docs/figures/headline.csv`.
 
 Full results, with intervals and verdicts on the pre-registered hypotheses: `docs/results-main.md` (Haiku 5.5 grid
 and Sonnet 5.5 check), `docs/results-d6.md`, `docs/results-adaptive.md`. Every change made to graders or the harness
-after seeing model output is logged in `docs/grader-changes.md`.
+after seeing model output is logged in `docs/grader-changes.md`. The threat model is in `docs/threat-model.md`, and
+the episodes are described in `docs/dataset-card.md`.
 
 ## Pre-registered hypotheses
 
