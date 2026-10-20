@@ -77,7 +77,7 @@ async def run_job(world: World, job: Job, defence: Defence, client: ModelClient,
             results = []
             for call in turn.tool_calls:
                 rec.tool_calls += 1
-                content, is_error = _dispatch(world, ctx, defence, call.name, call.input, rec, inline_approver)
+                content, is_error = await _dispatch(world, ctx, defence, call.name, call.input, rec, inline_approver)
                 results.append({"id": call.id, "name": call.name, "content": content, "is_error": is_error})
                 world.conn.commit()
             messages.append({"role": "tool_results", "results": results})
@@ -102,7 +102,7 @@ def _log_action(world: World, run_id: int, name: str, args: dict, card: str, out
     )
 
 
-def _dispatch(world: World, ctx: ToolContext, defence: Defence, name: str, args, rec: JobRunRecord,
+async def _dispatch(world: World, ctx: ToolContext, defence: Defence, name: str, args, rec: JobRunRecord,
               inline_approver=None) -> tuple[str, bool]:
     if name not in REGISTRY or name not in _allowed(rec.job):
         return f"Error: tool {name} is not available in this job", True
@@ -113,7 +113,7 @@ def _dispatch(world: World, ctx: ToolContext, defence: Defence, name: str, args,
         return f"Error: {e}", True
     card = effect_card(world, name, args) if name in CONSEQUENTIAL_TOOLS else None
     try:
-        gate = defence.gate(world, name, args)
+        gate = await defence.review(world, name, args, _context(rec))
         if gate is None:
             result = execute(ctx, name, args)
             if card:
@@ -137,6 +137,20 @@ def _dispatch(world: World, ctx: ToolContext, defence: Defence, name: str, args,
         if card:
             _log_action(world, run_id, name, args, card, "error")
         return f"Error: {e}", True
+
+
+def _context(rec: JobRunRecord, limit: int = 4000) -> str:
+    """Recent turns of this run, newest first, for a monitor."""
+    parts = []
+    for item in reversed(rec.transcript):
+        if "tool_results" in item:
+            parts.extend(f"[tool result] {r['content'][:800]}" for r in item["tool_results"])
+        else:
+            if item.get("assistant"):
+                parts.append(f"[agent] {item['assistant'][:400]}")
+            parts.extend(f"[agent call] {c['name']} {json.dumps(c['input'], default=str)[:300]}"
+                         for c in item.get("tool_calls", []))
+    return "\n".join(parts)[:limit]
 
 
 def _allowed(job_name: str) -> tuple[str, ...]:
