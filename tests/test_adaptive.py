@@ -42,7 +42,7 @@ def test_only_attacker_events_are_controlled():
 
 def test_loop_runs_all_iterations_when_attack_never_lands():
     out = run(NullModel(), FakeAttacker())
-    assert out["attempts_used"] == 4 and not out["success"]
+    assert out["attempts_used"] == 4 and not out["success"] and out["episode"] is None
     assert out["attempts"][1]["messages"][0]["subject"] == "Rewrite 1"
 
 
@@ -55,6 +55,7 @@ def test_rewrites_that_drop_required_values_are_rejected():
 def test_loop_stops_on_activation():
     out = run(ScriptedModel(SEED["victim"]), FakeAttacker())
     assert out["success"] and out["attempts_used"] == 1
+    assert out["episode"]["events"] == SEED["events"]  # the episode that activated, kept for the held-out set
 
 
 def test_apply_rewrite_does_not_touch_genuine_events():

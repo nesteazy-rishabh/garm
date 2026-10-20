@@ -121,4 +121,5 @@ async def adapt(seed: dict, make_defence, target, attacker, make_approver, itera
     return {"seed": seed["id"], "goal": seed["attack"]["goal"], "timing": seed["attack"]["timing"],
             "success": best["stage"] == "activation", "attempts_used": len(attempts),
             "first_success_attempt": next((a["attempt"] for a in attempts if a["stage"] == "activation"), None),
-            "best_stage": best["stage"], "attempts": attempts}
+            "best_stage": best["stage"], "attempts": attempts,
+            "episode": ep if best["stage"] == "activation" else None}

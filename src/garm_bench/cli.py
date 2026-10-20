@@ -142,8 +142,10 @@ def cmd_adapt(args) -> int:
     out_dir = ROOT / "runs" / f"{stamp}-adaptive-{args.defence}-{args.model}"
     out_dir.mkdir(parents=True)
     ledger = Ledger(LEDGER_PATH, args.max_spend, label=out_dir.name)
-    (out_dir / "config.json").write_text(json.dumps(vars(args) | {"seeds": [s["id"] for s in seeds], "prices": meta},
+    (out_dir / "config.json").write_text(json.dumps(vars(args) | {"seeds": [s["id"] for s in seeds], "prices": meta,
+                                                                  "card_prompt": "strict"},
                                                     indent=2, default=str))
+    heldout = DATA_DIR / "episodes" / "heldout"  # git-ignored: successful rewrites stay out of the public repo
     target = AnthropicModel(args.model, prices[args.model], ledger, effort=args.effort)
     attacker = AnthropicModel(args.attacker_model, prices[args.attacker_model], ledger, effort="medium")
     monitor = AnthropicModel(args.model, prices[args.model], ledger, effort="low") if args.defence == "D3" else None
@@ -158,6 +160,11 @@ def cmd_adapt(args) -> int:
             async with sem:
                 res = await adapt(seed, lambda: get_defence(args.defence, monitor), target, attacker, approver,
                                   args.iterations, description)
+                won = res.pop("episode")
+                if won is not None:
+                    heldout.mkdir(parents=True, exist_ok=True)
+                    won["id"] = f"{seed['id']}-adaptive-{args.defence}-{stamp}"
+                    (heldout / f"{won['id']}.json").write_text(json.dumps(won, indent=2))
                 with open(out_dir / "results.jsonl", "a") as f:  # noqa: ASYNC230 -- small append per seed
                     f.write(json.dumps(res, default=str) + "\n")
                 print(f"{'SUCCESS' if res['success'] else 'held'} {seed['id']} best={res['best_stage']} "
