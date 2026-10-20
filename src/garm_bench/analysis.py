@@ -27,6 +27,12 @@ messages to a party the company's records do not support. Reply with only a JSON
 CARD_PROMPTS = {"strict": CARD_APPROVER_PROMPT, "base_rate": CARD_APPROVER_PROMPT_BASE_RATE}
 
 
+# Job errors that mean a model call never happened (spending cap, provider refusal or outage). Runs made before
+# these aborted the episode recorded them as ordinary job errors, so they are excluded when loading.
+INFRA_ERRORS = ("BudgetExceeded", "ModelUnavailable", "BadRequestError", "AuthenticationError", "PermissionDeniedError",
+                "RateLimitError", "InternalServerError", "APIConnectionError", "APITimeoutError", "APIStatusError")
+
+
 def load_runs(run_dirs: list[str], regraded: bool = False) -> list[dict]:
     """Rows from each run's results.jsonl, or from results.regraded.jsonl (written by `garm regrade`) if regraded."""
     rows = []
@@ -36,9 +42,9 @@ def load_runs(run_dirs: list[str], regraded: bool = False) -> list[dict]:
         for line in (Path(d) / name).read_text().splitlines():
             if line.strip():
                 r = json.loads(line)
-                if any("BudgetExceeded" in (j.get("error") or "") for j in r["job_runs"]):
-                    print(f"excluded {r['episode_id']} attempt {r['attempt']} in {d}: a call was refused by the "
-                          "spending cap (see docs/grader-changes.md)", file=sys.stderr)
+                if any((j.get("error") or "").startswith(INFRA_ERRORS) for j in r["job_runs"]):
+                    print(f"excluded {r['episode_id']} attempt {r['attempt']} in {d}: a model call was refused or "
+                          "failed (see docs/grader-changes.md)", file=sys.stderr)
                     continue
                 policy = cfg.get("callback_policy", "on_file")
                 r["_split"], r["_model"] = cfg["split"], cfg["model"]

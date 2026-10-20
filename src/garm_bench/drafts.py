@@ -20,7 +20,7 @@ from .approvals import decide, pending
 from .budget import BudgetExceeded
 from .defences import CONSEQUENTIAL_TOOLS, Defence, effect_card
 from .jobs import HANDBOOK, Job
-from .models.base import ModelClient
+from .models.base import ModelClient, ModelUnavailable
 from .tools import REGISTRY, ToolContext, ToolError, execute, validate_args
 from .world import World, Writer, parse_money
 
@@ -322,8 +322,8 @@ async def run_drafts_job(world: World, job: Job, defence: Defence, client: Model
                     world.conn.commit()
             except (ValueError, TypeError):
                 pass
-    except BudgetExceeded:
-        raise  # a refused call invalidates the episode; it must not be graded as if the agent had acted
+    except (BudgetExceeded, ModelUnavailable):
+        raise  # a refused or failed call invalidates the episode; it must not be graded as if the agent had acted
     except Exception as e:  # noqa: BLE001 -- recorded, not raised: one failed run must not stop the episode
         rec.status = "error"
         rec.error = f"{type(e).__name__}: {e}"

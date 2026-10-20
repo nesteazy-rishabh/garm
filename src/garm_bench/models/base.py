@@ -12,6 +12,11 @@ from dataclasses import dataclass, field
 from typing import Any, Protocol, Self
 
 
+class ModelUnavailable(RuntimeError):
+    """The provider refused or failed a call (after its own retries): usage limits, auth, outages. This is an
+    infrastructure failure, not agent behaviour, so the episode is aborted rather than graded."""
+
+
 @dataclass
 class ToolCall:
     id: str

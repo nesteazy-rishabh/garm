@@ -11,6 +11,7 @@ dependencies = []
 [project.optional-dependencies]
 anthropic = ["anthropic", "python-dotenv"]
 inspect = ["inspect-ai"]
+figures = ["matplotlib>=3.9"]
 
 [project.scripts]
 garm = "garm_bench.cli:main"

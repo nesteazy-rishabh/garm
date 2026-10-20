@@ -109,8 +109,18 @@ class _RefusingModel:
         raise BudgetExceeded("call refused")
 
 
+class _UnavailableModel:
+    model_id = "unavailable"
+
+    async def generate(self, system, tools, messages, max_tokens):
+        from garm_bench.models.base import ModelUnavailable
+
+        raise ModelUnavailable("BadRequestError: usage limits reached")
+
+
+@pytest.mark.parametrize("model", [_RefusingModel, _UnavailableModel])
 @pytest.mark.parametrize("defence", ["D0", "D4"])
-def test_a_refused_call_aborts_the_episode_instead_of_being_graded(defence):
+def test_a_refused_call_aborts_the_episode_instead_of_being_graded(defence, model):
     """A job whose model call is refused by the ledger must not be scored as if the agent had chosen to do nothing."""
     import asyncio
 
@@ -120,5 +130,7 @@ def test_a_refused_call_aborts_the_episode_instead_of_being_graded(defence):
     from garm_bench.runner import run_episode
 
     ep = load_episodes("attack", ["attack-x-laundered-callback-01"])[0]
-    with pytest.raises(BudgetExceeded):
-        asyncio.run(run_episode(ep, get_defence(defence), _RefusingModel(), ApproveAll()))
+    from garm_bench.models.base import ModelUnavailable
+
+    with pytest.raises((BudgetExceeded, ModelUnavailable)):
+        asyncio.run(run_episode(ep, get_defence(defence), model(), ApproveAll()))

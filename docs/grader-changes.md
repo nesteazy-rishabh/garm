@@ -62,3 +62,9 @@ Results are reported from `results.regraded.jsonl` (`garm analyze --regraded`), 
 | Runs | What happened | Diagnosis | Change |
 |---|---|---|---|
 | attack, D4, Sonnet 5.5 | 6 of the 8 family-X episodes stopped at the job-run cap, with 60 jobs recorded as errors, and the run still exited normally | **Harness bug.** The invocation reached its US$6.00 spending cap during family X, which runs last. The ledger refused the remaining calls correctly, but the job loop caught `BudgetExceeded` as an ordinary job error, so those episodes were graded as if the agent had done nothing. | `BudgetExceeded` now aborts the episode, which is then not recorded, and the run exits with status 3. A test covers both agent modes. The six episodes are rerun in a separate invocation and their invalid rows are excluded. No Haiku run was affected: none came near its cap, and the 7 non-ok jobs in the Haiku grid are turn limits. |
+
+## 2026-10-20, during the D6 runs
+
+| Runs | What happened | Diagnosis | Change |
+|---|---|---|---|
+| All five Sonnet 5.5 D6 runs | Pass rates of 0–12% and almost no spend | **Harness bug, external cause.** The API key reached the usage limit set on the Anthropic account, which is separate from Garm's ledger, and the API returned `400: You have reached your specified API usage limits`. As with the spending cap earlier, the job loop recorded each failed call as an ordinary job error and the episodes were graded. | Provider API errors are now raised as `ModelUnavailable` and abort the episode. `garm analyze` excludes any row whose jobs failed with a spending-cap refusal or a provider error (`analysis.INFRA_ERRORS`). The five runs are invalid and are not reported. No other run has such errors; every run folder was scanned. |

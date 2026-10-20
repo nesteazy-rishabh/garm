@@ -10,7 +10,7 @@ import time
 import anthropic
 
 from ..budget import Ledger, Price
-from .base import ModelTurn, ToolCall, Usage, estimate_tokens
+from .base import ModelTurn, ModelUnavailable, ToolCall, Usage, estimate_tokens
 
 
 def _to_api_messages(messages: list[dict]) -> list[dict]:
@@ -60,6 +60,8 @@ class AnthropicModel:
             )
         except Exception as e:
             self.ledger.settle(reservation, 0.0, {"model": self.model_id, "error": type(e).__name__})
+            if isinstance(e, anthropic.APIError):
+                raise ModelUnavailable(f"{type(e).__name__}: {e}") from e
             raise
         u = resp.usage
         usage = Usage(
