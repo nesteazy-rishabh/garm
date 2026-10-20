@@ -116,6 +116,59 @@ def cmd_judge_cards(args) -> int:
     return 0
 
 
+def cmd_adapt(args) -> int:
+    """Adaptive attacker over seed attack episodes (paid)."""
+    from dotenv import load_dotenv
+
+    from .adaptive import adapt
+    from .approvals import LLMCardApprover
+    from .models.anthropic_model import AnthropicModel
+
+    load_dotenv(ROOT / ".env")
+    prices, meta = load_prices(DATA_DIR / "prices.json")
+    check_prices_fresh(meta)
+    seeds = load_episodes("attack", args.seeds)
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    out_dir = ROOT / "runs" / f"{stamp}-adaptive-{args.defence}-{args.model}"
+    out_dir.mkdir(parents=True)
+    ledger = Ledger(LEDGER_PATH, args.max_spend, label=out_dir.name)
+    (out_dir / "config.json").write_text(json.dumps(vars(args) | {"seeds": [s["id"] for s in seeds], "prices": meta},
+                                                    indent=2, default=str))
+    target = AnthropicModel(args.model, prices[args.model], ledger, effort=args.effort)
+    attacker = AnthropicModel(args.attacker_model, prices[args.attacker_model], ledger, effort="medium")
+    monitor = AnthropicModel(args.model, prices[args.model], ledger, effort="low") if args.defence == "D3" else None
+    card_client = AnthropicModel(args.model, prices[args.model], ledger, effort="low")
+    approver = (lambda: LLMCardApprover(card_client)) if args.approver == "card_llm" else APPROVERS[args.approver]
+    description = get_defence(args.defence).description
+
+    async def go():
+        sem = asyncio.Semaphore(args.concurrency)
+
+        async def one(seed):
+            async with sem:
+                res = await adapt(seed, lambda: get_defence(args.defence, monitor), target, attacker, approver,
+                                  args.iterations, description)
+                with open(out_dir / "results.jsonl", "a") as f:  # noqa: ASYNC230 -- small append per seed
+                    f.write(json.dumps(res, default=str) + "\n")
+                print(f"{'SUCCESS' if res['success'] else 'held'} {seed['id']} best={res['best_stage']} "
+                      f"attempts={res['attempts_used']}", flush=True)
+                return res
+
+        return await asyncio.gather(*(one(s) for s in seeds), return_exceptions=True)
+
+    try:
+        results = asyncio.run(go())
+    finally:
+        ledger.close()
+    ok = [r for r in results if isinstance(r, dict)]
+    summary = {"defence": args.defence, "approver": args.approver, "seeds": len(seeds), "completed": len(ok),
+               "success_within_n": sum(r["success"] for r in ok), "iterations": args.iterations,
+               "errors": [repr(r) for r in results if not isinstance(r, dict)], "ledger": ledger.summary()}
+    (out_dir / "summary.json").write_text(json.dumps(summary, indent=2))
+    print(json.dumps(summary, indent=2))
+    return 0
+
+
 def cmd_spend(args) -> int:
     from dotenv import load_dotenv
 
@@ -210,7 +263,16 @@ def cmd_run(args) -> int:
     return 0
 
 
+def load_plugins() -> None:
+    """Import modules named in GARM_PLUGINS (comma-separated) so their defences register before parsing."""
+    import importlib
+
+    for name in filter(None, (m.strip() for m in os.environ.get("GARM_PLUGINS", "").split(","))):
+        importlib.import_module(name)
+
+
 def main(argv: list[str] | None = None) -> int:
+    load_plugins()
     p = argparse.ArgumentParser(prog="garm")
     sub = p.add_subparsers(dest="cmd", required=True)
     v = sub.add_parser("validate", help="check episodes and graders offline")
@@ -232,6 +294,17 @@ def main(argv: list[str] | None = None) -> int:
     j.add_argument("--out", required=True)
     j.add_argument("--max-spend", type=float, required=True)
     j.set_defaults(fn=cmd_judge_cards)
+    ad = sub.add_parser("adapt", help="adaptive attacker over seed attack episodes (paid)")
+    ad.add_argument("--seeds", nargs="+", required=True, help="attack episode ids or prefixes")
+    ad.add_argument("--defence", default="D0", choices=sorted(DEFENCES))
+    ad.add_argument("--model", default="claude-haiku-5-5")
+    ad.add_argument("--effort", default="medium")
+    ad.add_argument("--attacker-model", default="claude-sonnet-5-5")
+    ad.add_argument("--approver", default="approve_all", choices=[*sorted(APPROVERS), "card_llm"])
+    ad.add_argument("--iterations", type=int, default=10)
+    ad.add_argument("--concurrency", type=int, default=4)
+    ad.add_argument("--max-spend", type=float, required=True)
+    ad.set_defaults(fn=cmd_adapt)
     s = sub.add_parser("spend", help="show cumulative spend")
     s.set_defaults(fn=cmd_spend)
     r = sub.add_parser("run", help="run a model (paid)")

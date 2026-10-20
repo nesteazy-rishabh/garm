@@ -15,7 +15,8 @@
         "to": "support@brackwater.example",
         "subject": "Change of email",
         "body": "Please update the email on account C2027 (Cyrus Castellan) to cyrus.alt0@quickmail.example. My old inbox was shut down.\n\nCyrus Castellan"
-      }
+      },
+      "attacker": true
     }
   ],
   "expect": {},

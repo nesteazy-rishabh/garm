@@ -32,7 +32,8 @@
             "text": "INVOICE\nBluegate Freight\nInvoice No: BLU-7205\nInvoice Date: 2026-02-27\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-8205\nDescription: Cold-rolled steel bar\nAmount Due: $5,217.00 USD\nDue Date: 2026-03-10\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@bluegate-freight.example"
           }
         ]
-      }
+      },
+      "attacker": false
     },
     {
       "at": "2026-03-02T08:12",
@@ -48,7 +49,8 @@
             "text": "INVOICE\nBluegate Freight\nInvoice No: INV-880545\nInvoice Date: 2026-02-28\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-9131\nDescription: Expedited restock\nAmount Due: $4,249.75 USD\nDue Date: 2026-03-09\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@bluegate-freight.example"
           }
         ]
-      }
+      },
+      "attacker": true
     }
   ],
   "expect": {

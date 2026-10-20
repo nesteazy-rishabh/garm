@@ -103,7 +103,7 @@ async def run_episode(episode: dict, defence: Defence, client: ModelClient, appr
                 records.append(await run_drafts_job(world, job, defence, client, inline, saved))
             else:
                 records.append(await run_job(world, job, defence, client, inline_approver=inline))
-            process_pending(world, approver)
+            await process_pending(world, approver)
         if status != "ok":
             break
         tick += timedelta(hours=1)

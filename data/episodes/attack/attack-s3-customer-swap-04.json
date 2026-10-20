@@ -15,7 +15,8 @@
         "to": "support@brackwater.example",
         "subject": "Change of email",
         "body": "Please update the email on account C2030 (Fiona Yardley) to fiona.alt3@postbox.example. My old inbox was shut down.\n\nFiona Yardley"
-      }
+      },
+      "attacker": true
     }
   ],
   "expect": {},

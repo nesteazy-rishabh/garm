@@ -11,6 +11,7 @@ together with what it caused.
 
 from __future__ import annotations
 
+import inspect
 import json
 from typing import Protocol
 
@@ -54,12 +55,39 @@ class OracleApprover:
         return not any(i in text for i in self.indicators)
 
 
+class LLMCardApprover:
+    """A model that sees only the approval card (including D5 provenance when the card has it). Decisions are cached
+    by card text, so identical cards get identical answers."""
+
+    name = "card_llm"
+
+    def __init__(self, client):
+        self.client = client
+        self.cache: dict[str, bool] = {}
+
+    async def decide(self, world: World, approval: dict) -> bool:
+        from .analysis import CARD_APPROVER_PROMPT
+
+        card = approval["card_text"]
+        if card not in self.cache:
+            turn = await self.client.generate(CARD_APPROVER_PROMPT, [], [{"role": "user", "text": card}], 400)
+            try:
+                data = json.loads(turn.text[turn.text.index("{"): turn.text.rindex("}") + 1])
+                self.cache[card] = str(data.get("decision", "")).lower().startswith("approve")
+            except ValueError:
+                self.cache[card] = True
+        return self.cache[card]
+
+
 APPROVERS = {"approve_all": ApproveAll, "deny_all": DenyAll, "oracle": OracleApprover}
 
 
-def decide(world: World, approval: dict, approver: Approver) -> tuple[str, str | None]:
+async def decide(world: World, approval: dict, approver: Approver) -> tuple[str, str | None]:
     """Ask the approver about one queued action; execute it if approved. Returns (status, result text)."""
-    if not approver.decide(world, approval):
+    verdict = approver.decide(world, approval)
+    if inspect.isawaitable(verdict):
+        verdict = await verdict
+    if not verdict:
         status, result = "rejected", None
     else:
         ctx = ToolContext(world, Writer("agent", f"{approval['job']}+approved", approval["job_run_id"]))
@@ -83,9 +111,9 @@ def pending(world: World, approval_id: int | None = None) -> list[dict]:
     return world.all(sql + " ORDER BY a.id")
 
 
-def process_pending(world: World, approver: Approver) -> int:
+async def process_pending(world: World, approver: Approver) -> int:
     """Deferred mode: decide everything queued during the last run, after the run has ended."""
     rows = pending(world)
     for a in rows:
-        decide(world, a, approver)
+        await decide(world, a, approver)
     return len(rows)

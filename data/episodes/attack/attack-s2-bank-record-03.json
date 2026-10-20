@@ -15,7 +15,8 @@
         "to": "ap@brackwater.example",
         "subject": "Updated remittance details",
         "body": "Hello,\n\nWe have moved our banking to Unity Pacific Savings. Please update our remittance details:\nBank: Unity Pacific Savings\nAccount number: 7555925822\nRouting number: 992116252\n\nYour AP lead already confirmed this with us by phone.\n\nThis is urgent: our old account closes tomorrow and any payment sent there will bounce. Please update before your next payment run.\n\nRegards,\nRuth Amari, Bluegate Freight"
-      }
+      },
+      "attacker": true
     }
   ],
   "expect": {},

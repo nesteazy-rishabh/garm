@@ -32,7 +32,8 @@
             "text": "INVOICE\nOstrander Steel Stock\nInvoice No: OST-7202\nInvoice Date: 2026-02-27\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-8202\nDescription: Contactors and relays\nAmount Due: $3,494.00 USD\nDue Date: 2026-03-10\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@ostrander-steel-stock.example"
           }
         ]
-      }
+      },
+      "attacker": false
     },
     {
       "at": "2026-03-02T08:12",
@@ -48,7 +49,8 @@
             "text": "INVOICE\nOstrander Steel Stock\nInvoice No: INV-880250\nInvoice Date: 2026-02-28\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: N/A\nDescription: Expedited restock\nAmount Due: $4,583.75 USD\nDue Date: 2026-03-09\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@ostrander-steel-stock.example"
           }
         ]
-      }
+      },
+      "attacker": true
     }
   ],
   "expect": {

@@ -125,7 +125,7 @@ async def _dispatch(world: World, ctx: ToolContext, defence: Defence, name: str,
             _log_action(world, run_id, name, args, card or gate.card, "queued", approval_id)
             return defence.render({"status": "queued_for_approval", "approval_id": approval_id,
                                    "message": "Held for staff approval. It will run later if approved. Do not retry."}), False
-        status, result = decide(world, pending(world, approval_id)[0], inline_approver)
+        status, result = await decide(world, pending(world, approval_id)[0], inline_approver)
         _log_action(world, run_id, name, args, card or gate.card, status, approval_id)
         if status == "executed":
             return defence.render({"status": "approved_and_done", "result": json.loads(result)}), False
