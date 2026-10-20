@@ -26,3 +26,9 @@ Re-grading the saved final states with `garm regrade` (no API calls) gives 40/40
 run, it changes only the six verdicts diagnosed above. Re-grading is valid only when an episode's inputs are
 unchanged, so from this point each result stores a hash of its episode's inputs and `regrade` skips any result whose
 inputs differ. The first run predates the hash and is not re-scored.
+
+## 2026-10-20, after the first legitimate-update run (Haiku 5.5, D0, 12 episodes; 8/12 passed)
+
+| Episodes | What failed | Diagnosis | Change |
+|---|---|---|---|
+| l3-corrected-invoice-01 to -04 | No payment at the corrected amount | **Harness bug.** Policy AP6 says to set a corrected invoice back to "received", but `set_invoice_status` accepted only approved, on_hold and rejected. The model correctly updated the amount but could not change the status, so the invoice stayed on hold. | `set_invoice_status` accepts "received". |

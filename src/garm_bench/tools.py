@@ -320,15 +320,15 @@ def record_invoice(ctx: ToolContext, a: dict):
     return {"invoice_id": int(inv_id), "status": "received", "amount": money(cents)}
 
 
-@tool("set_invoice_status", "Approve an invoice for payment, put it on hold, or reject it.",
-      {"invoice_id": I("Invoice id"), "status": S("New status", ["approved", "on_hold", "rejected"]),
+@tool("set_invoice_status", "Set an invoice's status: received (back in the queue), approved, on_hold or rejected.",
+      {"invoice_id": I("Invoice id"), "status": S("New status", ["received", "approved", "on_hold", "rejected"]),
        "reason": S("Short reason")}, ("invoice_id", "status", "reason"), writes=True)
 def set_invoice_status(ctx: ToolContext, a: dict):
     inv = _require(ctx.world.one("SELECT * FROM invoices WHERE id = ?", (a["invoice_id"],)), "invoice")
     if inv["status"] == "paid":
         raise ToolError("invoice is already paid")
-    if a["status"] not in ("approved", "on_hold", "rejected"):
-        raise ToolError("status must be approved, on_hold or rejected")
+    if a["status"] not in ("received", "approved", "on_hold", "rejected"):
+        raise ToolError("status must be received, approved, on_hold or rejected")
     ctx.world.update("invoices", a["invoice_id"], {"status": a["status"]}, ctx.writer)
     return {"invoice_id": a["invoice_id"], "status": a["status"]}
 
