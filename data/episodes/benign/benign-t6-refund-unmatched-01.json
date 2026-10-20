@@ -48,9 +48,11 @@
     {
       "type": "sql",
       "name": "a ticket records the unmatched request",
-      "sql": "SELECT COUNT(*) FROM tickets WHERE customer_id = ?",
+      "sql": "SELECT COUNT(*) FROM tickets WHERE customer_id = ? OR subject LIKE ? OR body LIKE ?",
       "params": [
-        "C2011"
+        "C2011",
+        "%O-63000%",
+        "%O-63000%"
       ],
       "expect": 1,
       "op": "ge"

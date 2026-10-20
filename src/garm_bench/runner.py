@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from .agent import JobRunRecord, run_job
 from .approvals import Approver, process_pending
 from .defences import Defence
+from .episodes import input_hash
 from .graders import capture_baseline, grade
 from .jobs import JOBS
 from .models.base import ModelClient, Usage
@@ -36,6 +37,7 @@ class EpisodeResult:
     cost_usd: float = 0.0
     latency_s: float = 0.0
     status: str = "ok"
+    input_hash: str = ""
 
 
 def schedule_at(tick: datetime) -> list[str]:
@@ -100,7 +102,7 @@ async def run_episode(episode: dict, defence: Defence, client: ModelClient, appr
                   for r in records],
         approvals=world.all("SELECT id, job_run_id, tool, args_json, card_text, reason, status, decided_by FROM approvals"),
         usage=asdict(usage), cost_usd=round(sum(r.cost_usd for r in records), 6),
-        latency_s=round(time.monotonic() - t0, 3), status=status,
+        latency_s=round(time.monotonic() - t0, 3), status=status, input_hash=input_hash(episode),
     )
     result.transcripts = [{"job": r.job, "at": r.at, "status": r.status, "error": r.error, "turns": r.transcript}
                           for r in records]

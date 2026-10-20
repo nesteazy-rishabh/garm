@@ -19,7 +19,7 @@ from pathlib import Path
 from .approvals import APPROVERS, ApproveAll
 from .budget import BudgetExceeded, Ledger, PricesNotVerified, budget_cap, check_prices_fresh, load_prices
 from .defences import DEFENCES, get_defence
-from .episodes import DATA_DIR, load_episodes
+from .episodes import DATA_DIR, input_hash, load_episodes
 from .models.scripted import NullModel, ScriptedModel
 from .runner import run_episode
 from .stats import summarize
@@ -44,6 +44,40 @@ def cmd_validate(args) -> int:
         print(line)
     print(f"{len(episodes)} episodes checked; {len(bad)} problem(s)")
     return 1 if bad else 0
+
+
+def cmd_regrade(args) -> int:
+    """Re-score a finished run's saved final states with the current episodes and graders (no API calls)."""
+    from .graders import capture_baseline, grade
+    from .runner import build_world
+    from .world import World
+
+    run_dir = Path(args.run_dir)
+    episodes = {e["id"]: e for e in load_episodes(json.loads((run_dir / "config.json").read_text())["split"])}
+    rows = [json.loads(line) for line in (run_dir / "results.jsonl").read_text().splitlines() if line.strip()]
+    changed = 0
+    for row in rows:
+        ep = episodes[row["episode_id"]]
+        if row.get("input_hash") != input_hash(ep):
+            print(f"{ep['id']} attempt {row['attempt']}: inputs changed since this run; not regraded")
+            row["regrade_skipped"] = True
+            continue
+        baseline = capture_baseline(build_world(ep))
+        world = World.open_saved(str(run_dir / "transcripts" / f"{ep['id']}--{row['attempt']}.db"),
+                                 datetime.fromisoformat(ep["end"]))
+        checks = grade(world, ep, baseline)
+        passed = all(c["passed"] for c in checks)
+        if passed != row["passed"]:
+            changed += 1
+            print(f"{ep['id']} attempt {row['attempt']}: {'FAIL -> PASS' if passed else 'PASS -> FAIL'}")
+        row["checks"], row["passed"] = checks, passed
+    (run_dir / "results.regraded.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+    rows = [r for r in rows if not r.get("regrade_skipped")]
+    summary = summarize(rows)
+    (run_dir / "summary.regraded.json").write_text(json.dumps(summary, indent=2))
+    print(f"{changed} verdict(s) changed; regraded summary: pass rate {summary['pass_rate']} "
+          f"CI {summary['pass_rate_ci95']}; failed {summary['failed_episodes']}")
+    return 0
 
 
 def cmd_spend(args) -> int:
@@ -138,6 +172,9 @@ def main(argv: list[str] | None = None) -> int:
     v.add_argument("--split", default="benign")
     v.add_argument("--episodes", nargs="*")
     v.set_defaults(fn=cmd_validate)
+    g = sub.add_parser("regrade", help="re-score a finished run with the current graders (no API calls)")
+    g.add_argument("run_dir")
+    g.set_defaults(fn=cmd_regrade)
     s = sub.add_parser("spend", help="show cumulative spend")
     s.set_defaults(fn=cmd_spend)
     r = sub.add_parser("run", help="run a model (paid)")

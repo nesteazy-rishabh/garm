@@ -54,6 +54,15 @@ class World:
         self.conn.executescript(resources.files("garm_bench").joinpath("schema.sql").read_text())
         self.now = now
 
+    @classmethod
+    def open_saved(cls, path: str, now: datetime) -> World:
+        """Open a saved final state read-only, for re-grading."""
+        world = cls.__new__(cls)
+        world.conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+        world.conn.row_factory = sqlite3.Row
+        world.now = now
+        return world
+
     # --- clock -----------------------------------------------------------------------------------------------
 
     def ts(self) -> str:
