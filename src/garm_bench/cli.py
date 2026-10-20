@@ -83,7 +83,10 @@ def cmd_regrade(args) -> int:
 def cmd_analyze(args) -> int:
     from .analysis import analyze, load_runs
 
-    decisions = json.loads(Path(args.card_decisions).read_text()) if args.card_decisions else None
+    decisions = {}
+    for spec in args.card_decisions or []:
+        name, _, path = spec.partition("=")
+        decisions[name] = json.loads(Path(path).read_text())
     table = analyze(load_runs(args.run_dirs), decisions, args.tasks_per_day)
     text = json.dumps(table, indent=2)
     if args.out:
@@ -95,7 +98,7 @@ def cmd_analyze(args) -> int:
 def cmd_judge_cards(args) -> int:
     from dotenv import load_dotenv
 
-    from .analysis import judge_cards, load_runs, unique_cards
+    from .analysis import CARD_PROMPTS, judge_cards, load_runs, unique_cards
     from .models.anthropic_model import AnthropicModel
 
     load_dotenv(ROOT / ".env")
@@ -108,7 +111,7 @@ def cmd_judge_cards(args) -> int:
     ledger = Ledger(LEDGER_PATH, args.max_spend, label=f"judge-cards:{args.model}")
     try:
         client = AnthropicModel(args.model, prices[args.model], ledger, effort="low")
-        known |= asyncio.run(judge_cards(cards, client))
+        known |= asyncio.run(judge_cards(cards, client, CARD_PROMPTS[args.prompt]))
     finally:
         ledger.close()
     out.write_text(json.dumps(known, indent=1))
@@ -284,7 +287,7 @@ def main(argv: list[str] | None = None) -> int:
     g.set_defaults(fn=cmd_regrade)
     a = sub.add_parser("analyze", help="headline table from run folders (no API calls)")
     a.add_argument("run_dirs", nargs="+")
-    a.add_argument("--card-decisions", default=None, help="JSON from judge-cards")
+    a.add_argument("--card-decisions", action="append", help="NAME=path to judge-cards output; repeatable")
     a.add_argument("--tasks-per-day", type=int, default=200)
     a.add_argument("--out", default=None)
     a.set_defaults(fn=cmd_analyze)
@@ -292,6 +295,7 @@ def main(argv: list[str] | None = None) -> int:
     j.add_argument("run_dirs", nargs="+")
     j.add_argument("--model", default="claude-haiku-5-5")
     j.add_argument("--out", required=True)
+    j.add_argument("--prompt", default="strict", choices=["strict", "base_rate"])
     j.add_argument("--max-spend", type=float, required=True)
     j.set_defaults(fn=cmd_judge_cards)
     ad = sub.add_parser("adapt", help="adaptive attacker over seed attack episodes (paid)")
