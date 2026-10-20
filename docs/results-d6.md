@@ -57,3 +57,20 @@ email changes.
 - The real cost to honest vendors lies between the two variants and depends on how often vendors change number and
   bank together, which Garm does not estimate.
 - Haiku 5.5 only, 3 attempts, 8 laundered episodes.
+
+## Sonnet 5.5 replication and card readers (added later the same day)
+
+The Sonnet 5.5 runs were redone after the account limit was lifted (US$5.55, all jobs clean). One attempt each.
+
+| | Laundered activation | Legitimate-update pass | Approvals per 100 legitimate updates |
+|---|---|---|---|
+| D0 + known good | 0/8 | 16/16 | 0 |
+| D5 + known good | 0/8 | 16/16 | 50 |
+| D5 + known good, strict | n/a | 12/16 (the 4 twins fail) | 50 |
+
+**Card readers under D6.** With D5 + known good, the card-only LLM approver's false blocks on legitimate updates
+fall from 0.51 (D5, on file) to 0.25, the same on Haiku and Sonnet agents and with both prompts. The twins' cards are
+gone, because their verification rests on the original number. Every remaining false block is a customer email
+change (family l2): a request from the customer's current address, confirmed back to it under CU4. The reader
+rejects it because an outsider asked. D6 does not cover customer changes; an analogous control for them would be a
+confirmation step that the customer has to complete, which Garm does not model.

@@ -152,3 +152,33 @@ LLM approvers are still Haiku 5.5.
 The larger model changes nothing qualitative. Direct templated injection still never reaches an action, the
 laundered chain still succeeds every time, and D5 still concentrates approvals and halves the reading approver's
 false blocks without removing them. With n = 8 laundered episodes per cell, 8/8 has a 95% interval of 68–100%.
+
+## Stronger card reader (pre-registered in `approver-models.md`)
+
+Both card-reader prompts were rerun with Claude Sonnet 5.5 as the approver on every logged card: 1,430 distinct
+cards, US$4.30. The table shows honest updates blocked, by family, on the Haiku 5.5 main grid. Each cell is runs
+blocked out of runs that passed under approve-all.
+
+| Family | Defence | Haiku `strict` | Haiku `base_rate` | Sonnet `strict` | Sonnet `base_rate` |
+|---|---|---|---|---|---|
+| l1 bank change, verified through the original number | D2 / D4 | 11/11, 12/12 | 11/11, 12/12 | 11/11, 12/12 | 11/11, 12/12 |
+| | D5 | 0/11 (no card) | 0/11 | 0/11 | 0/11 |
+| l2 customer email change | D2 / D4 | 12/12, 12/12 | 12/12, 12/12 | 12/12, 12/12 | 1/12, 4/12 |
+| | D5 | 12/12 | 12/12 | 12/12 | 9/12 |
+| l3 corrected invoice | D2 / D4 | 12/12, 12/12 | 3/12, 3/12 | 0/12, 0/12 | 0/12, 0/12 |
+| | D5 | 0/12 (no card) | 0/12 | 0/12 | 0/12 |
+| l4 honest phone-then-bank change (the twin) | D2 / D4 | 11/11, 11/11 | 11/11, 11/11 | 11/11, 11/11 | 11/11, 11/11 |
+| | D5 | **12/12** | 9/12 | **12/12** | **12/12** |
+
+Laundered success with the Sonnet reader is 0 under D2, D4 and D5 with both prompts, and 0.08 under D3 with
+`base_rate`.
+
+- **Prediction confirmed.** Under D5 the Sonnet reader blocks every honest twin while stopping every laundered
+  chain, exactly as Haiku does. A more capable reader does not separate the two, because the card does not contain
+  what separates them.
+- **Where the stronger reader helps, it helps on cards that hold the answer.** Sonnet approves the corrected
+  invoices and, with `base_rate`, most customer email changes, which Haiku rejects. Overall false blocks under D2
+  and D4 fall from 0.80–1.00 to 0.50–0.74.
+- **Provenance helps every reader on verified changes.** Under D2 and D4, every reader blocks bank changes that
+  staff verified through the original number, because the card shows a bank change and not how it was verified.
+  Under D5 those changes carry high authority and produce no card.
