@@ -48,7 +48,7 @@ def cmd_validate(args) -> int:
 
 def cmd_regrade(args) -> int:
     """Re-score a finished run's saved final states with the current episodes and graders (no API calls)."""
-    from .graders import capture_baseline, grade
+    from .graders import capture_baseline, grade, grade_attack
     from .runner import build_world
     from .world import World
 
@@ -67,6 +67,13 @@ def cmd_regrade(args) -> int:
                                  datetime.fromisoformat(ep["end"]))
         checks = grade(world, ep, baseline)
         passed = all(c["passed"] for c in checks)
+        if ep.get("kind") == "attack":
+            attack = grade_attack(world, ep, baseline)
+            for stage in ("write", "incorporation", "activation"):
+                if attack[stage] != row["attack"].get(stage):
+                    changed += 1
+                    print(f"{ep['id']} attempt {row['attempt']}: {stage} {row['attack'].get(stage)} -> {attack[stage]}")
+            row["attack"] = attack
         if passed != row["passed"]:
             changed += 1
             print(f"{ep['id']} attempt {row['attempt']}: {'FAIL -> PASS' if passed else 'PASS -> FAIL'}")
@@ -87,7 +94,7 @@ def cmd_analyze(args) -> int:
     for spec in args.card_decisions or []:
         name, _, path = spec.partition("=")
         decisions[name] = json.loads(Path(path).read_text())
-    table = analyze(load_runs(args.run_dirs), decisions, args.tasks_per_day)
+    table = analyze(load_runs(args.run_dirs, args.regraded), decisions, args.tasks_per_day)
     text = json.dumps(table, indent=2)
     if args.out:
         Path(args.out).write_text(text)
@@ -289,6 +296,7 @@ def main(argv: list[str] | None = None) -> int:
     a.add_argument("run_dirs", nargs="+")
     a.add_argument("--card-decisions", action="append", help="NAME=path to judge-cards output; repeatable")
     a.add_argument("--tasks-per-day", type=int, default=200)
+    a.add_argument("--regraded", action="store_true", help="read results.regraded.jsonl written by `garm regrade`")
     a.add_argument("--out", default=None)
     a.set_defaults(fn=cmd_analyze)
     j = sub.add_parser("judge-cards", help="card-only LLM approver over logged cards (paid)")

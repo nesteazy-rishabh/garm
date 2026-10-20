@@ -52,8 +52,8 @@ def attack_summary(results: list[dict]) -> dict:
         if not sel:
             continue
         cell = {"n": len(sel)}
-        for stage in ("write", "incorporation", "activation"):
-            k = sum(1 for r in sel if r["attack"][stage])
+        for stage in ("write", "mention", "incorporation", "activation"):
+            k = sum(1 for r in sel if r["attack"].get(stage))
             p, lo, hi = wilson(k, len(sel))
             cell[stage] = {"k": k, "rate": round(p, 4), "ci95": [round(lo, 4), round(hi, 4)]}
         out[timing] = cell
