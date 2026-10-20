@@ -89,3 +89,14 @@ def test_pass_k_requires_every_attempt():
     assert s["pass^2"] == 0.5
     assert s["pass_rate"] == 0.75
     assert s["approvals_per_100_episodes"] == 25.0
+
+
+def test_env_cap_can_lower_but_not_raise(tmp_path, monkeypatch):
+    monkeypatch.setenv("GARM_BUDGET_CAP_USD", "70")
+    ledger = Ledger(tmp_path / "a.jsonl", 1000.0, "t")
+    assert ledger.cap == 70.0 and ledger.invocation_cap == 70.0
+    ledger.close()
+    monkeypatch.setenv("GARM_BUDGET_CAP_USD", "500")
+    ledger = Ledger(tmp_path / "b.jsonl", 1000.0, "t")
+    assert ledger.cap == HARD_CAP_USD
+    ledger.close()

@@ -15,7 +15,15 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
 
-HARD_CAP_USD = 100.0  # approved project budget; not configurable from the command line
+HARD_CAP_USD = 100.0  # project ceiling; GARM_BUDGET_CAP_USD can lower it, never raise it
+
+
+def budget_cap() -> float:
+    try:
+        requested = float(os.environ.get("GARM_BUDGET_CAP_USD", HARD_CAP_USD))
+    except ValueError:
+        return HARD_CAP_USD
+    return max(0.0, min(HARD_CAP_USD, requested))
 PRICE_MAX_AGE_DAYS = 14
 
 
@@ -83,7 +91,8 @@ class Ledger:
             raise ValueError("invocation cap must be positive")
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.invocation_cap = min(invocation_cap_usd, HARD_CAP_USD)
+        self.cap = budget_cap()
+        self.invocation_cap = min(invocation_cap_usd, self.cap)
         self.label = label
         self._lock = threading.Lock()
         self._lockfile = open(self.path.with_suffix(".lock"), "w")  # noqa: SIM115 -- held until close()
@@ -108,7 +117,7 @@ class Ledger:
 
     def remaining(self) -> float:
         return min(
-            HARD_CAP_USD - self.prior_spend - self.invocation_spend - self.reserved,
+            self.cap - self.prior_spend - self.invocation_spend - self.reserved,
             self.invocation_cap - self.invocation_spend - self.reserved,
         )
 
@@ -118,7 +127,7 @@ class Ledger:
                 raise BudgetExceeded(
                     f"call refused: estimate ${estimate_usd:.4f} exceeds remaining budget ${self.remaining():.4f} "
                     f"(spent before this run ${self.prior_spend:.4f}, this run ${self.invocation_spend:.4f}, "
-                    f"run cap ${self.invocation_cap:.2f}, hard cap ${HARD_CAP_USD:.2f})"
+                    f"run cap ${self.invocation_cap:.2f}, budget cap ${self.cap:.2f})"
                 )
             self.reserved += estimate_usd
             return estimate_usd
@@ -138,7 +147,7 @@ class Ledger:
     def summary(self) -> dict:
         return {"calls": self.calls, "invocation_spend_usd": round(self.invocation_spend, 4),
                 "cumulative_spend_usd": round(self.prior_spend + self.invocation_spend, 4),
-                "invocation_cap_usd": self.invocation_cap, "hard_cap_usd": HARD_CAP_USD}
+                "invocation_cap_usd": self.invocation_cap, "budget_cap_usd": self.cap}
 
     def close(self) -> None:
         fcntl.flock(self._lockfile, fcntl.LOCK_UN)

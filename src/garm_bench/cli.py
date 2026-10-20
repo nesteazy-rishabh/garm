@@ -17,7 +17,7 @@ from datetime import datetime
 from pathlib import Path
 
 from .approvals import APPROVERS, ApproveAll
-from .budget import HARD_CAP_USD, BudgetExceeded, Ledger, PricesNotVerified, check_prices_fresh, load_prices
+from .budget import BudgetExceeded, Ledger, PricesNotVerified, budget_cap, check_prices_fresh, load_prices
 from .defences import DEFENCES, get_defence
 from .episodes import DATA_DIR, load_episodes
 from .models.scripted import NullModel, ScriptedModel
@@ -47,6 +47,9 @@ def cmd_validate(args) -> int:
 
 
 def cmd_spend(args) -> int:
+    from dotenv import load_dotenv
+
+    load_dotenv(ROOT / ".env")
     total, calls, by_model = 0.0, 0, {}
     if LEDGER_PATH.exists():
         for line in LEDGER_PATH.read_text().splitlines():
@@ -55,7 +58,7 @@ def cmd_spend(args) -> int:
                 total += e["cost_usd"]
                 calls += 1
                 by_model[e.get("model", "?")] = by_model.get(e.get("model", "?"), 0.0) + e["cost_usd"]
-    print(json.dumps({"cumulative_spend_usd": round(total, 4), "calls": calls, "hard_cap_usd": HARD_CAP_USD,
+    print(json.dumps({"cumulative_spend_usd": round(total, 4), "calls": calls, "budget_cap_usd": budget_cap(),
                       "by_model": {k: round(v, 4) for k, v in by_model.items()}}, indent=2))
     return 0
 
@@ -112,7 +115,7 @@ def cmd_run(args) -> int:
               "max_spend_usd": args.max_spend, "prices": meta, "started": stamp}
     (out_dir / "config.json").write_text(json.dumps(config, indent=2))
     print(f"running {len(episodes)} episodes x {args.repeats} on {args.model} under {args.defence}; "
-          f"cap ${ledger.invocation_cap:.2f} this run, ${ledger.prior_spend:.4f} spent so far of ${HARD_CAP_USD:.0f}")
+          f"cap ${ledger.invocation_cap:.2f} this run, ${ledger.prior_spend:.4f} spent so far of ${ledger.cap:.0f}")
     client = AnthropicModel(args.model, prices[args.model], ledger, effort=args.effort)
     try:
         results, errors = asyncio.run(_run_all(episodes, args.defence, client, args.approver, args.repeats,
