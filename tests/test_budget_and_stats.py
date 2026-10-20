@@ -100,3 +100,25 @@ def test_env_cap_can_lower_but_not_raise(tmp_path, monkeypatch):
     ledger = Ledger(tmp_path / "b.jsonl", 1000.0, "t")
     assert ledger.cap == HARD_CAP_USD
     ledger.close()
+
+
+class _RefusingModel:
+    model_id = "refusing"
+
+    async def generate(self, system, tools, messages, max_tokens):
+        raise BudgetExceeded("call refused")
+
+
+@pytest.mark.parametrize("defence", ["D0", "D4"])
+def test_a_refused_call_aborts_the_episode_instead_of_being_graded(defence):
+    """A job whose model call is refused by the ledger must not be scored as if the agent had chosen to do nothing."""
+    import asyncio
+
+    from garm_bench.approvals import ApproveAll
+    from garm_bench.defences import get_defence
+    from garm_bench.episodes import load_episodes
+    from garm_bench.runner import run_episode
+
+    ep = load_episodes("attack", ["attack-x-laundered-callback-01"])[0]
+    with pytest.raises(BudgetExceeded):
+        asyncio.run(run_episode(ep, get_defence(defence), _RefusingModel(), ApproveAll()))

@@ -7,6 +7,7 @@ import time
 from dataclasses import dataclass, field
 
 from .approvals import decide, pending
+from .budget import BudgetExceeded
 from .defences import CONSEQUENTIAL_TOOLS, Defence, effect_card
 from .jobs import HANDBOOK, Job
 from .models.base import ModelClient, Usage
@@ -84,6 +85,8 @@ async def run_job(world: World, job: Job, defence: Defence, client: ModelClient,
             rec.transcript.append({"tool_results": results})
         else:
             rec.status = "turn_limit"
+    except BudgetExceeded:
+        raise  # a refused call invalidates the episode; it must not be graded as if the agent had acted
     except Exception as e:  # noqa: BLE001 -- recorded, not raised: one failed run must not stop the episode
         rec.status = "error"
         rec.error = f"{type(e).__name__}: {e}"
