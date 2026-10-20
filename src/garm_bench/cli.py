@@ -80,6 +80,42 @@ def cmd_regrade(args) -> int:
     return 0
 
 
+def cmd_analyze(args) -> int:
+    from .analysis import analyze, load_runs
+
+    decisions = json.loads(Path(args.card_decisions).read_text()) if args.card_decisions else None
+    table = analyze(load_runs(args.run_dirs), decisions, args.tasks_per_day)
+    text = json.dumps(table, indent=2)
+    if args.out:
+        Path(args.out).write_text(text)
+    print(text)
+    return 0
+
+
+def cmd_judge_cards(args) -> int:
+    from dotenv import load_dotenv
+
+    from .analysis import judge_cards, load_runs, unique_cards
+    from .models.anthropic_model import AnthropicModel
+
+    load_dotenv(ROOT / ".env")
+    prices, meta = load_prices(DATA_DIR / "prices.json")
+    check_prices_fresh(meta)
+    out = Path(args.out)
+    known = json.loads(out.read_text()) if out.exists() else {}
+    cards = [c for c in unique_cards(load_runs(args.run_dirs)) if c not in known]
+    print(f"{len(cards)} new card(s) to judge with {args.model}")
+    ledger = Ledger(LEDGER_PATH, args.max_spend, label=f"judge-cards:{args.model}")
+    try:
+        client = AnthropicModel(args.model, prices[args.model], ledger, effort="low")
+        known |= asyncio.run(judge_cards(cards, client))
+    finally:
+        ledger.close()
+    out.write_text(json.dumps(known, indent=1))
+    print(json.dumps(ledger.summary()))
+    return 0
+
+
 def cmd_spend(args) -> int:
     from dotenv import load_dotenv
 
@@ -184,6 +220,18 @@ def main(argv: list[str] | None = None) -> int:
     g = sub.add_parser("regrade", help="re-score a finished run with the current graders (no API calls)")
     g.add_argument("run_dir")
     g.set_defaults(fn=cmd_regrade)
+    a = sub.add_parser("analyze", help="headline table from run folders (no API calls)")
+    a.add_argument("run_dirs", nargs="+")
+    a.add_argument("--card-decisions", default=None, help="JSON from judge-cards")
+    a.add_argument("--tasks-per-day", type=int, default=200)
+    a.add_argument("--out", default=None)
+    a.set_defaults(fn=cmd_analyze)
+    j = sub.add_parser("judge-cards", help="card-only LLM approver over logged cards (paid)")
+    j.add_argument("run_dirs", nargs="+")
+    j.add_argument("--model", default="claude-haiku-5-5")
+    j.add_argument("--out", required=True)
+    j.add_argument("--max-spend", type=float, required=True)
+    j.set_defaults(fn=cmd_judge_cards)
     s = sub.add_parser("spend", help="show cumulative spend")
     s.set_defaults(fn=cmd_spend)
     r = sub.add_parser("run", help="run a model (paid)")
