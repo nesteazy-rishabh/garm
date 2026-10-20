@@ -6,6 +6,7 @@ import json
 import time
 from dataclasses import dataclass, field
 
+from .approvals import decide, pending
 from .defences import Defence
 from .jobs import HANDBOOK, Job
 from .models.base import ModelClient, Usage
@@ -45,7 +46,9 @@ def queue_approval(world: World, job_run_id: int, tool: str, args: dict, reason:
     return cur.lastrowid
 
 
-async def run_job(world: World, job: Job, defence: Defence, client: ModelClient, max_turns: int = MAX_TURNS) -> JobRunRecord:
+async def run_job(world: World, job: Job, defence: Defence, client: ModelClient, max_turns: int = MAX_TURNS,
+                  inline_approver=None) -> JobRunRecord:
+    """Run one job. With `inline_approver`, gated actions are decided when attempted; otherwise they stay queued."""
     run_id = world.start_job_run(job.name)
     rec = JobRunRecord(job=job.name, job_run_id=run_id, at=world.ts())
     ctx = ToolContext(world, Writer("agent", job.name, run_id))
@@ -74,7 +77,7 @@ async def run_job(world: World, job: Job, defence: Defence, client: ModelClient,
             results = []
             for call in turn.tool_calls:
                 rec.tool_calls += 1
-                content, is_error = _dispatch(world, ctx, defence, call.name, call.input, rec)
+                content, is_error = _dispatch(world, ctx, defence, call.name, call.input, rec, inline_approver)
                 results.append({"id": call.id, "name": call.name, "content": content, "is_error": is_error})
                 world.conn.commit()
             messages.append({"role": "tool_results", "results": results})
@@ -90,18 +93,27 @@ async def run_job(world: World, job: Job, defence: Defence, client: ModelClient,
     return rec
 
 
-def _dispatch(world: World, ctx: ToolContext, defence: Defence, name: str, args, rec: JobRunRecord) -> tuple[str, bool]:
+def _dispatch(world: World, ctx: ToolContext, defence: Defence, name: str, args, rec: JobRunRecord,
+              inline_approver=None) -> tuple[str, bool]:
     if name not in REGISTRY or name not in _allowed(rec.job):
         return f"Error: tool {name} is not available in this job", True
     try:
         args = validate_args(REGISTRY[name], dict(args) if isinstance(args, dict) else args)
         gate = defence.gate(world, name, args)
-        if gate is not None:
-            approval_id = queue_approval(world, ctx.writer.job_run_id, name, args, gate.reason, gate.card)
-            rec.approvals_queued += 1
+        if gate is None:
+            return defence.render(execute(ctx, name, args)), False
+        approval_id = queue_approval(world, ctx.writer.job_run_id, name, args, gate.reason, gate.card)
+        rec.approvals_queued += 1
+        if inline_approver is None:
             return defence.render({"status": "queued_for_approval", "approval_id": approval_id,
-                                   "message": "Held for staff approval. It will run if approved. Do not retry."}), False
-        return defence.render(execute(ctx, name, args)), False
+                                   "message": "Held for staff approval. It will run later if approved. Do not retry."}), False
+        status, result = decide(world, pending(world, approval_id)[0], inline_approver)
+        if status == "executed":
+            return defence.render({"status": "approved_and_done", "result": json.loads(result)}), False
+        if status == "rejected":
+            return defence.render({"status": "rejected", "approval_id": approval_id,
+                                   "message": "A staff reviewer rejected this action. Do not retry it."}), False
+        return f"Error: approved but failed: {result}", True
     except ToolError as e:
         return f"Error: {e}", True
 

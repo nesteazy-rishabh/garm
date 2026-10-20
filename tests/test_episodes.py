@@ -14,8 +14,8 @@ from garm_bench.runner import run_episode
 EPISODES = load_episodes("benign")
 
 
-def run(ep, defence, model, approver=None):
-    return asyncio.run(run_episode(ep, get_defence(defence), model, approver or ApproveAll()))
+def run(ep, defence, model, approver=None, mode="inline"):
+    return asyncio.run(run_episode(ep, get_defence(defence), model, approver or ApproveAll(), approval_mode=mode))
 
 
 def failed(result):
@@ -26,10 +26,10 @@ def test_forty_benign_episodes():
     assert len(EPISODES) == 40
 
 
-@pytest.mark.parametrize("defence", ["D0", "D1", "D2"])
+@pytest.mark.parametrize("defence,mode", [("D0", "inline"), ("D1", "inline"), ("D2", "inline"), ("D2", "deferred")])
 @pytest.mark.parametrize("ep", EPISODES, ids=[e["id"] for e in EPISODES])
-def test_oracle_passes(ep, defence):
-    _, result = run(ep, defence, ScriptedModel(ep["oracle"]))
+def test_oracle_passes(ep, defence, mode):
+    _, result = run(ep, defence, ScriptedModel(ep["oracle"]), mode=mode)
     assert all(r["status"] == "ok" for r in result.job_runs), result.transcripts
     assert result.passed, failed(result)
 
@@ -42,8 +42,9 @@ def test_null_agent_fails(ep):
 
 @pytest.mark.parametrize("ep", [e for e in EPISODES if e["expect"].get("payments") or e["expect"].get("refunds_issued")],
                          ids=lambda e: e["id"])
-def test_gateway_with_deny_all_blocks_money_movement(ep):
-    world, result = run(ep, "D2", ScriptedModel(ep["oracle"]), DenyAll())
+@pytest.mark.parametrize("mode", ["inline", "deferred"])
+def test_gateway_with_deny_all_blocks_money_movement(ep, mode):
+    world, result = run(ep, "D2", ScriptedModel(ep["oracle"]), DenyAll(), mode)
     assert world.scalar("SELECT COUNT(*) FROM approvals WHERE status = 'rejected'") > 0
     assert not result.passed
 

@@ -97,14 +97,16 @@ def cmd_spend(args) -> int:
     return 0
 
 
-async def _run_all(episodes, defence_name, client, approver_name, repeats, concurrency, out_dir: Path):
+async def _run_all(episodes, defence_name, client, approver_name, repeats, concurrency, out_dir: Path,
+                   approval_mode: str):
     sem = asyncio.Semaphore(concurrency)
     results = []
     (out_dir / "transcripts").mkdir(parents=True, exist_ok=True)
 
     async def one(ep, attempt):
         async with sem:
-            world, r = await run_episode(ep, get_defence(defence_name), client, APPROVERS[approver_name](), attempt)
+            world, r = await run_episode(ep, get_defence(defence_name), client, APPROVERS[approver_name](), attempt,
+                                         approval_mode)
             row = asdict(r)
             results.append(row)
             with open(out_dir / "results.jsonl", "a") as f:  # noqa: ASYNC230 -- small append per episode
@@ -145,7 +147,7 @@ def cmd_run(args) -> int:
     out_dir.mkdir(parents=True)
     ledger = Ledger(LEDGER_PATH, args.max_spend, label=out_dir.name)
     config = {"split": args.split, "defence": args.defence, "model": args.model, "effort": args.effort,
-              "approver": args.approver, "repeats": args.repeats, "episodes": [e["id"] for e in episodes],
+              "approver": args.approver, "approval_mode": args.approval_mode, "repeats": args.repeats, "episodes": [e["id"] for e in episodes],
               "max_spend_usd": args.max_spend, "prices": meta, "started": stamp}
     (out_dir / "config.json").write_text(json.dumps(config, indent=2))
     print(f"running {len(episodes)} episodes x {args.repeats} on {args.model} under {args.defence}; "
@@ -153,7 +155,7 @@ def cmd_run(args) -> int:
     client = AnthropicModel(args.model, prices[args.model], ledger, effort=args.effort)
     try:
         results, errors = asyncio.run(_run_all(episodes, args.defence, client, args.approver, args.repeats,
-                                               args.concurrency, out_dir))
+                                               args.concurrency, out_dir, args.approval_mode))
     finally:
         ledger.close()
     summary = summarize(results) | {"ledger": ledger.summary(), "errors": [repr(e) for e in errors]}
@@ -184,6 +186,7 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--model", required=True)
     r.add_argument("--effort", default=None, choices=["low", "medium", "high", "xhigh", "max"])
     r.add_argument("--approver", default="approve_all", choices=sorted(APPROVERS))
+    r.add_argument("--approval-mode", default="inline", choices=["inline", "deferred"])
     r.add_argument("--repeats", type=int, default=1)
     r.add_argument("--concurrency", type=int, default=4)
     r.add_argument("--max-spend", type=float, required=True, help="cap for this invocation in USD")

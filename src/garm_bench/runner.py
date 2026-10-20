@@ -38,6 +38,7 @@ class EpisodeResult:
     latency_s: float = 0.0
     status: str = "ok"
     input_hash: str = ""
+    approval_mode: str = "inline"
 
 
 def schedule_at(tick: datetime) -> list[str]:
@@ -63,7 +64,9 @@ def build_world(episode: dict) -> World:
 
 
 async def run_episode(episode: dict, defence: Defence, client: ModelClient, approver: Approver,
-                      attempt: int = 0) -> tuple[World, EpisodeResult]:
+                      attempt: int = 0, approval_mode: str = "inline") -> tuple[World, EpisodeResult]:
+    if approval_mode not in ("inline", "deferred"):
+        raise ValueError("approval_mode must be inline or deferred")
     world = build_world(episode)
     baseline = capture_baseline(world)
     start, end = datetime.fromisoformat(episode["start"]), datetime.fromisoformat(episode["end"])
@@ -86,7 +89,8 @@ async def run_episode(episode: dict, defence: Defence, client: ModelClient, appr
             if len(records) >= MAX_JOB_RUNS:
                 status = "job_run_cap"
                 break
-            records.append(await run_job(world, job, defence, client))
+            records.append(await run_job(world, job, defence, client,
+                                         inline_approver=approver if approval_mode == "inline" else None))
             process_pending(world, approver)
         if status != "ok":
             break
@@ -102,7 +106,7 @@ async def run_episode(episode: dict, defence: Defence, client: ModelClient, appr
                   for r in records],
         approvals=world.all("SELECT id, job_run_id, tool, args_json, card_text, reason, status, decided_by FROM approvals"),
         usage=asdict(usage), cost_usd=round(sum(r.cost_usd for r in records), 6),
-        latency_s=round(time.monotonic() - t0, 3), status=status, input_hash=input_hash(episode),
+        latency_s=round(time.monotonic() - t0, 3), status=status, input_hash=input_hash(episode), approval_mode=approval_mode,
     )
     result.transcripts = [{"job": r.job, "at": r.at, "status": r.status, "error": r.error, "turns": r.transcript}
                           for r in records]
