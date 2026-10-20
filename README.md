@@ -110,10 +110,11 @@ The data behind the figure is in `docs/figures/headline.csv`.
 - **Agent-side defences differ only in the approvals they ask for.** D5 asked for none on routine work and about one
   per legitimate update, against 1–3 per task for D2–D4. With an approver who passes 93% of cards, laundered
   success stayed at 79–83% for every gated defence. A card-reading LLM approver stopped it but also blocked 45–100%
-  of honest updates, because an honest vendor's provenance looks the same as a hijacked one's.
+  of honest updates. Under D5 it blocked every honest phone-then-bank change, with Claude Haiku 5.5 or Claude
+  Sonnet 5.5 as the reader, because an honest vendor's provenance looks the same as a hijacked one's.
 - **A known-good callback stops it at the source.** Under D6, laundered success fell to 0 of 24 under every defence,
-  including with no agent defence and no approvals. Legitimate-update pass rates were unchanged, and D5 needed half
-  as many approvals. In the strict variant, honest vendors who changed number and bank together are blocked (about
+  including with no agent defence and no approvals. Legitimate-update pass rates were unchanged, D5 needed half as many
+  approvals, and the card reader's false blocks halved. This replicated on Sonnet 5.5. In the strict variant, honest vendors who changed number and bank together are blocked (about
   a quarter of legitimate updates in this mix).
 
 Full results, with intervals and verdicts on the pre-registered hypotheses: `docs/results-main.md` (Haiku 5.5 grid
