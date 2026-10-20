@@ -2,8 +2,8 @@
 
 These models are applied post hoc to the approval cards logged in approve-all runs (`src/garm_bench/approvers.py`).
 They are assumptions grounded in the sources below, and results are reported across the ranges given. Notes with
-every URL are in the research scan, `research_notes/Garm innovation scan/approval_evidence.md`. The two Anthropic
-figures marked † must be re-checked against the primary posts before publication.
+every URL are in the research scan, `research_notes/Garm innovation scan/approval_evidence.md`. The Anthropic
+figures (†) were checked against the primary posts on 2026-10-20. The approval rate appears as about 93% on 2026-05-25 (https://www.anthropic.com/engineering/how-we-contain-claude) and as 97% on 2026-08-07 (https://claude.com/blog/auto-mode-default-in-claude-code), so it is reported as 93–97%. The tester study figures come from the 2026-08-07 post: 143 of 1,053 caught (13.6%), about 17% early in a session, about 5% after 50 or more prior prompts.
 
 | Model | P(approve benign) | P(approve malicious) | Basis |
 |---|---|---|---|
