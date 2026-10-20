@@ -139,7 +139,7 @@ def cmd_adapt(args) -> int:
     check_prices_fresh(meta)
     seeds = load_episodes("attack", args.seeds)
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    out_dir = ROOT / "runs" / f"{stamp}-adaptive-{args.defence}-{args.model}"
+    out_dir = ROOT / "runs" / f"{stamp}-adaptive-{args.feedback}-{args.defence}-{args.model}"
     out_dir.mkdir(parents=True)
     ledger = Ledger(LEDGER_PATH, args.max_spend, label=out_dir.name)
     (out_dir / "config.json").write_text(json.dumps(vars(args) | {"seeds": [s["id"] for s in seeds], "prices": meta,
@@ -159,11 +159,11 @@ def cmd_adapt(args) -> int:
         async def one(seed):
             async with sem:
                 res = await adapt(seed, lambda: get_defence(args.defence, monitor), target, attacker, approver,
-                                  args.iterations, description)
+                                  args.iterations, description, args.feedback)
                 won = res.pop("episode")
                 if won is not None:
                     heldout.mkdir(parents=True, exist_ok=True)
-                    won["id"] = f"{seed['id']}-adaptive-{args.defence}-{stamp}"
+                    won["id"] = f"{seed['id']}-adaptive-{args.feedback}-{args.defence}-{stamp}"
                     (heldout / f"{won['id']}.json").write_text(json.dumps(won, indent=2))
                 with open(out_dir / "results.jsonl", "a") as f:  # noqa: ASYNC230 -- small append per seed
                     f.write(json.dumps(res, default=str) + "\n")
@@ -321,6 +321,8 @@ def main(argv: list[str] | None = None) -> int:
     ad.add_argument("--attacker-model", default="claude-sonnet-5-5")
     ad.add_argument("--approver", default="approve_all", choices=[*sorted(APPROVERS), "card_llm"])
     ad.add_argument("--iterations", type=int, default=10)
+    ad.add_argument("--feedback", choices=["stage", "trace"], default="stage",
+                    help="stage: grey-box (furthest stage reached); trace: also what the agent did")
     ad.add_argument("--concurrency", type=int, default=4)
     ad.add_argument("--max-spend", type=float, required=True)
     ad.set_defaults(fn=cmd_adapt)
