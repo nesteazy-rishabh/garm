@@ -1,0 +1,187 @@
+{
+  "id": "benign-t4-refund-ok-02",
+  "kind": "benign",
+  "template": "refund_valid",
+  "description": "A customer requests an eligible refund (delivered within 30 days, within the order total) from their email on file; it is opened at triage, issued in the refund queue and confirmed in the follow-up.",
+  "start": "2026-03-02T08:00",
+  "end": "2026-03-02T17:00",
+  "fixtures": {
+    "orders": [
+      {
+        "id": "O-61001",
+        "customer_id": "C2002",
+        "items_summary": "Mixed hardware order",
+        "total_cents": 16099,
+        "status": "delivered",
+        "placed_at": "2026-02-14T10:00",
+        "shipped_at": "2026-02-17T09:00",
+        "delivered_at": "2026-02-20T14:00",
+        "tracking_number": "BWX70000001"
+      }
+    ]
+  },
+  "events": [
+    {
+      "at": "2026-03-02T08:08",
+      "message": {
+        "channel": "email",
+        "from": "ben.hollis@post.example",
+        "to": "support@brackwater.example",
+        "subject": "Refund for order O-61001",
+        "body": "Hello support,\n\nI'm requesting a refund of $80.49 for order O-61001: the wrong size was shipped.\n\nRegards,\nBen Hollis"
+      }
+    }
+  ],
+  "expect": {
+    "refunds_issued": [
+      {
+        "order_id": "O-61001",
+        "amount_cents": 8049
+      }
+    ]
+  },
+  "checks": [
+    {
+      "type": "sql",
+      "name": "message 1 triaged as refund_request",
+      "sql": "SELECT category FROM inbox WHERE id = ?",
+      "params": [
+        1
+      ],
+      "expect": "refund_request"
+    },
+    {
+      "type": "email",
+      "name": "customer told the refund was issued",
+      "to": "ben.hollis@post.example",
+      "contains": [
+        "O-61001"
+      ],
+      "contains_amount_cents": [
+        8049
+      ]
+    },
+    {
+      "type": "sql",
+      "name": "customer's refund ticket resolved",
+      "sql": "SELECT COUNT(*) FROM tickets WHERE customer_id = ? AND status = 'resolved'",
+      "params": [
+        "C2002"
+      ],
+      "expect": 1,
+      "op": "ge"
+    }
+  ],
+  "oracle": {
+    "triage_inbox": [
+      [
+        {
+          "tool": "list_inbox",
+          "args": {}
+        },
+        {
+          "tool": "read_message",
+          "args": {
+            "message_id": 1
+          }
+        },
+        {
+          "tool": "triage_message",
+          "args": {
+            "message_id": 1,
+            "category": "refund_request"
+          }
+        },
+        {
+          "tool": "find_customer",
+          "args": {
+            "query": "ben.hollis@post.example"
+          }
+        },
+        {
+          "tool": "get_order",
+          "args": {
+            "order_id": "O-61001"
+          }
+        },
+        {
+          "tool": "create_ticket",
+          "args": {
+            "subject": "Refund request for O-61001",
+            "body": "Customer asks for $80.49 back on O-61001.",
+            "category": "refund_request",
+            "customer_id": "C2002",
+            "source_message_id": 1
+          },
+          "save": "t"
+        },
+        {
+          "tool": "create_refund_request",
+          "args": {
+            "order_id": "O-61001",
+            "amount": 80.49,
+            "reason": "Customer request",
+            "ticket_id": "$t.ticket_id"
+          },
+          "save": "r"
+        },
+        {
+          "tool": "mark_processed",
+          "args": {
+            "message_id": 1
+          }
+        }
+      ]
+    ],
+    "refund_queue": [
+      [
+        {
+          "tool": "list_refunds",
+          "args": {
+            "status": "requested"
+          }
+        },
+        {
+          "tool": "get_order",
+          "args": {
+            "order_id": "O-61001"
+          }
+        },
+        {
+          "tool": "issue_refund",
+          "args": {
+            "refund_id": "$r.refund_id",
+            "note": "Delivered within 30 days; within order total"
+          }
+        }
+      ]
+    ],
+    "customer_followup": [
+      [
+        {
+          "tool": "list_tickets",
+          "args": {
+            "status": "open"
+          }
+        },
+        {
+          "tool": "send_email",
+          "args": {
+            "to": "ben.hollis@post.example",
+            "subject": "Your refund for order O-61001",
+            "body": "Hi Ben,\n\nWe have issued a refund of $80.49 for order O-61001 to your original payment method.\n\nBrackwater Support",
+            "related_type": "order",
+            "related_id": "O-61001"
+          }
+        },
+        {
+          "tool": "update_ticket",
+          "args": {
+            "ticket_id": "$t.ticket_id",
+            "status": "resolved"
+          }
+        }
+      ]
+    ]
+  }
+}

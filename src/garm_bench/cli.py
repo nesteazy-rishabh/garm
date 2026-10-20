@@ -1,0 +1,156 @@
+"""Command line: validate episodes offline, run a model on episodes under a spend cap, and show spend.
+
+    garm validate                      # oracle must pass and the do-nothing agent must fail (no API calls)
+    garm run --defence D0 --model claude-haiku-5-5 --repeats 1 --max-spend 1.00 [--episodes benign-t1]
+    garm spend                         # cumulative spend from the ledger
+"""
+
+from __future__ import annotations
+
+import argparse
+import asyncio
+import json
+import os
+import sys
+from dataclasses import asdict
+from datetime import datetime
+from pathlib import Path
+
+from .approvals import APPROVERS, ApproveAll
+from .budget import HARD_CAP_USD, BudgetExceeded, Ledger, PricesNotVerified, check_prices_fresh, load_prices
+from .defences import DEFENCES, get_defence
+from .episodes import DATA_DIR, load_episodes
+from .models.scripted import NullModel, ScriptedModel
+from .runner import run_episode
+from .stats import summarize
+
+ROOT = DATA_DIR.parent
+LEDGER_PATH = ROOT / "runs" / "ledger.jsonl"
+
+
+def cmd_validate(args) -> int:
+    bad = []
+    episodes = load_episodes(args.split, args.episodes)
+    for ep in episodes:
+        for defence in ("D0", "D1", "D2"):
+            _, r = asyncio.run(run_episode(ep, get_defence(defence), ScriptedModel(ep["oracle"]), ApproveAll()))
+            if not r.passed or any(j["status"] != "ok" for j in r.job_runs):
+                bad.append(f"oracle fails {ep['id']} under {defence}: "
+                           + "; ".join(c["name"] for c in r.checks if not c["passed"]))
+        _, r = asyncio.run(run_episode(ep, get_defence("D0"), NullModel(), ApproveAll()))
+        if r.passed:
+            bad.append(f"do-nothing agent passes {ep['id']}")
+    for line in bad:
+        print(line)
+    print(f"{len(episodes)} episodes checked; {len(bad)} problem(s)")
+    return 1 if bad else 0
+
+
+def cmd_spend(args) -> int:
+    total, calls, by_model = 0.0, 0, {}
+    if LEDGER_PATH.exists():
+        for line in LEDGER_PATH.read_text().splitlines():
+            if line.strip():
+                e = json.loads(line)
+                total += e["cost_usd"]
+                calls += 1
+                by_model[e.get("model", "?")] = by_model.get(e.get("model", "?"), 0.0) + e["cost_usd"]
+    print(json.dumps({"cumulative_spend_usd": round(total, 4), "calls": calls, "hard_cap_usd": HARD_CAP_USD,
+                      "by_model": {k: round(v, 4) for k, v in by_model.items()}}, indent=2))
+    return 0
+
+
+async def _run_all(episodes, defence_name, client, approver_name, repeats, concurrency, out_dir: Path):
+    sem = asyncio.Semaphore(concurrency)
+    results = []
+    (out_dir / "transcripts").mkdir(parents=True, exist_ok=True)
+
+    async def one(ep, attempt):
+        async with sem:
+            world, r = await run_episode(ep, get_defence(defence_name), client, APPROVERS[approver_name](), attempt)
+            row = asdict(r)
+            results.append(row)
+            with open(out_dir / "results.jsonl", "a") as f:  # noqa: ASYNC230 -- small append per episode
+                f.write(json.dumps(row, default=str) + "\n")
+            (out_dir / "transcripts" / f"{ep['id']}--{attempt}.json").write_text(
+                json.dumps(r.transcripts, indent=1, default=str))
+            world.save(str(out_dir / "transcripts" / f"{ep['id']}--{attempt}.db"))
+            mark = "PASS" if r.passed else "FAIL"
+            print(f"{mark} {ep['id']} attempt {attempt} cost ${r.cost_usd:.4f} approvals {len(r.approvals)}", flush=True)
+
+    tasks = [one(ep, a) for a in range(repeats) for ep in episodes]
+    outcomes = await asyncio.gather(*tasks, return_exceptions=True)
+    errors = [o for o in outcomes if isinstance(o, BaseException)]
+    return results, errors
+
+
+def cmd_run(args) -> int:
+    from dotenv import load_dotenv
+
+    load_dotenv(ROOT / ".env")  # the key is read by the SDK from the environment; never printed
+    if "ANTHROPIC_API_KEY" not in os.environ:
+        print("ANTHROPIC_API_KEY is not set (expected in garm/.env)", file=sys.stderr)
+        return 2
+    prices, meta = load_prices(DATA_DIR / "prices.json")
+    try:
+        check_prices_fresh(meta)
+    except PricesNotVerified as e:
+        print(f"refusing to run: {e}", file=sys.stderr)
+        return 2
+    if args.model not in prices:
+        print(f"no price for {args.model} in data/prices.json", file=sys.stderr)
+        return 2
+    from .models.anthropic_model import AnthropicModel
+
+    episodes = load_episodes(args.split, args.episodes)
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    out_dir = ROOT / "runs" / f"{stamp}-{args.split}-{args.defence}-{args.model}"
+    out_dir.mkdir(parents=True)
+    ledger = Ledger(LEDGER_PATH, args.max_spend, label=out_dir.name)
+    config = {"split": args.split, "defence": args.defence, "model": args.model, "effort": args.effort,
+              "approver": args.approver, "repeats": args.repeats, "episodes": [e["id"] for e in episodes],
+              "max_spend_usd": args.max_spend, "prices": meta, "started": stamp}
+    (out_dir / "config.json").write_text(json.dumps(config, indent=2))
+    print(f"running {len(episodes)} episodes x {args.repeats} on {args.model} under {args.defence}; "
+          f"cap ${ledger.invocation_cap:.2f} this run, ${ledger.prior_spend:.4f} spent so far of ${HARD_CAP_USD:.0f}")
+    client = AnthropicModel(args.model, prices[args.model], ledger, effort=args.effort)
+    try:
+        results, errors = asyncio.run(_run_all(episodes, args.defence, client, args.approver, args.repeats,
+                                               args.concurrency, out_dir))
+    finally:
+        ledger.close()
+    summary = summarize(results) | {"ledger": ledger.summary(), "errors": [repr(e) for e in errors]}
+    (out_dir / "summary.json").write_text(json.dumps(summary, indent=2))
+    print(json.dumps(summary, indent=2))
+    if any(isinstance(e, BudgetExceeded) for e in errors):
+        print("stopped early: budget cap reached", file=sys.stderr)
+        return 3
+    return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    p = argparse.ArgumentParser(prog="garm")
+    sub = p.add_subparsers(dest="cmd", required=True)
+    v = sub.add_parser("validate", help="check episodes and graders offline")
+    v.add_argument("--split", default="benign")
+    v.add_argument("--episodes", nargs="*")
+    v.set_defaults(fn=cmd_validate)
+    s = sub.add_parser("spend", help="show cumulative spend")
+    s.set_defaults(fn=cmd_spend)
+    r = sub.add_parser("run", help="run a model (paid)")
+    r.add_argument("--split", default="benign")
+    r.add_argument("--episodes", nargs="*", help="episode ids or id prefixes")
+    r.add_argument("--defence", default="D0", choices=sorted(DEFENCES))
+    r.add_argument("--model", required=True)
+    r.add_argument("--effort", default=None, choices=["low", "medium", "high", "xhigh", "max"])
+    r.add_argument("--approver", default="approve_all", choices=sorted(APPROVERS))
+    r.add_argument("--repeats", type=int, default=1)
+    r.add_argument("--concurrency", type=int, default=4)
+    r.add_argument("--max-spend", type=float, required=True, help="cap for this invocation in USD")
+    r.set_defaults(fn=cmd_run)
+    args = p.parse_args(argv)
+    return args.fn(args)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

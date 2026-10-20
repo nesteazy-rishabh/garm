@@ -1,0 +1,22 @@
+{
+  "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
+  "source_note": "Copied from the claude-api SDK reference cached 2026-10-06. Cache writes are 1.25x input (5-minute TTL). The Haiku 5.5 cache-read rate is assumed to be 0.1x input. Haiku 5.5 is priced higher above 100K prompt tokens. Batch API is 0.5x. Not yet checked against the live page.",
+  "verified_on": null,
+  "models": {
+    "claude-haiku-5-5": {
+      "input": 0.10,
+      "output": 0.50,
+      "cache_write": 0.125,
+      "cache_read": 0.01,
+      "long_context_threshold": 100000,
+      "long_input": 0.50,
+      "long_output": 2.50
+    },
+    "claude-sonnet-5-5": {
+      "input": 2.00,
+      "output": 10.00,
+      "cache_write": 2.50,
+      "cache_read": 0.20
+    }
+  }
+}
