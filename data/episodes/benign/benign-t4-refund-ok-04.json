@@ -11,7 +11,7 @@
         "id": "O-61003",
         "customer_id": "C2004",
         "items_summary": "Mixed hardware order",
-        "total_cents": 22500,
+        "total_cents": 5750,
         "status": "delivered",
         "placed_at": "2026-02-14T10:00",
         "shipped_at": "2026-02-17T09:00",
@@ -28,7 +28,7 @@
         "from": "dmitri.valdez@letterbox.example",
         "to": "support@brackwater.example",
         "subject": "Refund for order O-61003",
-        "body": "Hi,\n\nOrder O-61003 arrived but we no longer need it and it is unopened. I'd like a refund of $112.50, please.\n\nThanks,\nDmitri Valdez"
+        "body": "Hi,\n\nOrder O-61003 arrived but we no longer need it and it is unopened. I'd like a refund of $28.75, please.\n\nThanks,\nDmitri Valdez"
       }
     }
   ],
@@ -36,7 +36,7 @@
     "refunds_issued": [
       {
         "order_id": "O-61003",
-        "amount_cents": 11250
+        "amount_cents": 2875
       }
     ]
   },
@@ -58,7 +58,7 @@
         "O-61003"
       ],
       "contains_amount_cents": [
-        11250
+        2875
       ]
     },
     {
@@ -108,7 +108,7 @@
           "tool": "create_ticket",
           "args": {
             "subject": "Refund request for O-61003",
-            "body": "Customer asks for $112.50 back on O-61003.",
+            "body": "Customer asks for $28.75 back on O-61003.",
             "category": "refund_request",
             "customer_id": "C2004",
             "source_message_id": 1
@@ -119,7 +119,7 @@
           "tool": "create_refund_request",
           "args": {
             "order_id": "O-61003",
-            "amount": 112.5,
+            "amount": 28.75,
             "reason": "Customer request",
             "ticket_id": "$t.ticket_id"
           },
@@ -169,7 +169,7 @@
           "args": {
             "to": "dmitri.valdez@letterbox.example",
             "subject": "Your refund for order O-61003",
-            "body": "Hi Dmitri,\n\nWe have issued a refund of $112.50 for order O-61003 to your original payment method.\n\nBrackwater Support",
+            "body": "Hi Dmitri,\n\nWe have issued a refund of $28.75 for order O-61003 to your original payment method.\n\nBrackwater Support",
             "related_type": "order",
             "related_id": "O-61003"
           }

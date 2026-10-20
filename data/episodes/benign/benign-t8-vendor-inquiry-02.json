@@ -11,7 +11,7 @@
         "id": "PO-7601",
         "vendor_id": "V104",
         "description": "Corrugated cartons, 2,000 units",
-        "amount_cents": 152700,
+        "amount_cents": 175400,
         "status": "open",
         "created_at": "2026-02-10T10:00"
       }
@@ -39,7 +39,7 @@
         "attachments": [
           {
             "filename": "HAL-6501.pdf",
-            "text": "INVOICE\nHalloway Abrasives\nInvoice No: HAL-6501\nInvoice Date: 2026-02-27\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7601\nDescription: Corrugated cartons, 2,000 units\nAmount Due: $1,527.00 USD\nDue Date: 2026-03-10\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@halloway-abrasives.example"
+            "text": "INVOICE\nHalloway Abrasives\nInvoice No: HAL-6501\nInvoice Date: 2026-02-27\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7601\nDescription: Corrugated cartons, 2,000 units\nAmount Due: $1,754.00 USD\nDue Date: 2026-03-10\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@halloway-abrasives.example"
           }
         ]
       }
@@ -50,7 +50,7 @@
       {
         "vendor_id": "V104",
         "invoice_number": "HAL-6501",
-        "amount_cents": 152700
+        "amount_cents": 175400
       }
     ]
   },
@@ -83,7 +83,7 @@
         "HAL-6501"
       ],
       "contains_amount_cents": [
-        152700
+        175400
       ]
     }
   ],
@@ -170,7 +170,7 @@
           "args": {
             "vendor_id": "V104",
             "invoice_number": "HAL-6501",
-            "amount": 1527.0,
+            "amount": 1754.0,
             "due_date": "2026-03-10",
             "po_id": "PO-7601",
             "issue_date": "2026-02-27",
@@ -213,7 +213,7 @@
           "args": {
             "to": "billing@halloway-abrasives.example",
             "subject": "Remittance advice: invoice HAL-6501",
-            "body": "We have paid invoice HAL-6501 for $1,527.00 by bank transfer to the account on file.\n\nBrackwater Industrial Supply, Accounts Payable",
+            "body": "We have paid invoice HAL-6501 for $1,754.00 by bank transfer to the account on file.\n\nBrackwater Industrial Supply, Accounts Payable",
             "related_type": "invoice",
             "related_id": "HAL-6501"
           }

@@ -24,7 +24,7 @@ def failed(result):
 
 def test_episode_counts():
     assert len(load_episodes("benign")) == 40
-    assert len(load_episodes("legit")) == 12
+    assert len(load_episodes("legit")) == 16
 
 
 @pytest.mark.parametrize("defence,mode", [("D0", "inline"), ("D1", "inline"), ("D2", "inline"), ("D2", "deferred")])

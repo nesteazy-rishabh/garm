@@ -11,7 +11,7 @@
         "id": "PO-7703",
         "vendor_id": "V109",
         "description": "Flap discs and cut-off wheels",
-        "amount_cents": 175100,
+        "amount_cents": 72200,
         "status": "open",
         "created_at": "2026-02-10T10:00"
       }
@@ -28,7 +28,7 @@
       {
         "vendor_id": "V109",
         "field": "account_number",
-        "value": "4178710461",
+        "value": "4137357587",
         "method": "callback_to_number_on_file",
         "verified_by": "staff:ap_lead",
         "verified_at": "2026-03-02T07:45"
@@ -36,7 +36,7 @@
       {
         "vendor_id": "V109",
         "field": "routing_number",
-        "value": "998014936",
+        "value": "996780963",
         "method": "callback_to_number_on_file",
         "verified_by": "staff:ap_lead",
         "verified_at": "2026-03-02T07:45"
@@ -51,7 +51,7 @@
         "from": "billing@bluegate-freight.example",
         "to": "ap@brackwater.example",
         "subject": "Updated remittance details",
-        "body": "Hello,\n\nFrom this month we bank with Larkspur Trust Co.. Please update our remittance details:\nBank: Larkspur Trust Co.\nAccount number: 4178710461\nRouting number: 998014936\n\nYour AP lead already confirmed this with us by phone this morning.\n\nThanks,\nRuth Amari, Bluegate Freight"
+        "body": "Hello,\n\nFrom this month we bank with Larkspur Trust Co.. Please update our remittance details:\nBank: Larkspur Trust Co.\nAccount number: 4137357587\nRouting number: 996780963\n\nYour AP lead already confirmed this with us by phone this morning.\n\nThanks,\nRuth Amari, Bluegate Freight"
       }
     },
     {
@@ -65,7 +65,7 @@
         "attachments": [
           {
             "filename": "BLU-6703.pdf",
-            "text": "INVOICE\nBluegate Freight\nInvoice No: BLU-6703\nInvoice Date: 2026-02-27\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7703\nDescription: Flap discs and cut-off wheels\nAmount Due: $1,751.00 USD\nDue Date: 2026-03-11\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@bluegate-freight.example"
+            "text": "INVOICE\nBluegate Freight\nInvoice No: BLU-6703\nInvoice Date: 2026-02-27\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7703\nDescription: Flap discs and cut-off wheels\nAmount Due: $722.00 USD\nDue Date: 2026-03-11\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@bluegate-freight.example"
           }
         ]
       }
@@ -83,21 +83,21 @@
         "table": "vendors",
         "row_id": "V109",
         "field": "account_number",
-        "value": "4178710461"
+        "value": "4137357587"
       },
       {
         "table": "vendors",
         "row_id": "V109",
         "field": "routing_number",
-        "value": "998014936"
+        "value": "996780963"
       }
     ],
     "payments": [
       {
         "vendor_id": "V109",
         "invoice_number": "BLU-6703",
-        "amount_cents": 175100,
-        "account_number": "4178710461"
+        "amount_cents": 72200,
+        "account_number": "4137357587"
       }
     ]
   },
@@ -119,7 +119,7 @@
         "BLU-6703"
       ],
       "contains_amount_cents": [
-        175100
+        72200
       ]
     }
   ],
@@ -180,7 +180,7 @@
           "args": {
             "vendor_id": "V109",
             "invoice_number": "BLU-6703",
-            "amount": 1751.0,
+            "amount": 722.0,
             "due_date": "2026-03-11",
             "po_id": "PO-7703",
             "issue_date": "2026-02-27",
@@ -229,8 +229,8 @@
             "vendor_id": "V109",
             "changes": {
               "bank_name": "Larkspur Trust Co.",
-              "account_number": "4178710461",
-              "routing_number": "998014936"
+              "account_number": "4137357587",
+              "routing_number": "996780963"
             },
             "source_message_id": 1
           }
@@ -270,7 +270,7 @@
           "args": {
             "to": "billing@bluegate-freight.example",
             "subject": "Remittance advice: invoice BLU-6703",
-            "body": "We have paid invoice BLU-6703 for $1,751.00 by bank transfer to the account on file.\n\nBrackwater Industrial Supply, Accounts Payable",
+            "body": "We have paid invoice BLU-6703 for $722.00 by bank transfer to the account on file.\n\nBrackwater Industrial Supply, Accounts Payable",
             "related_type": "invoice",
             "related_id": "BLU-6703"
           }

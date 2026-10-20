@@ -213,6 +213,39 @@ def list_vendor_verifications(ctx: ToolContext, a: dict):
     return ctx.world.all("SELECT * FROM vendor_verifications WHERE vendor_id = ? ORDER BY id", (a["vendor_id"],))
 
 
+HIGH_SCRUTINY_VENDOR_FIELDS = ["bank_name", "account_number", "routing_number", "contact_email"]
+
+
+@tool("request_callback",
+      "Ask staff to confirm a requested change to a vendor's bank details or contact email by phoning the number on "
+      "file. Staff record a verification if the vendor confirms.",
+      {"vendor_id": S("Vendor id"), "field": S("Field to change", HIGH_SCRUTINY_VENDOR_FIELDS),
+       "value": S("Requested new value"), "source_message_id": I("Inbox message with the request")},
+      ("vendor_id", "field", "value"), writes=True)
+def request_callback(ctx: ToolContext, a: dict):
+    _require(ctx.world.one("SELECT id FROM vendors WHERE id = ?", (a["vendor_id"],)), "vendor")
+    if a["field"] not in HIGH_SCRUTINY_VENDOR_FIELDS:
+        raise ToolError(f"field must be one of {HIGH_SCRUTINY_VENDOR_FIELDS}")
+    rid = ctx.world.insert(
+        "callback_requests",
+        {"vendor_id": a["vendor_id"], "field": a["field"], "value": str(a["value"]).strip(), "status": "pending",
+         "source_message_id": a.get("source_message_id"), "requested_at": ctx.world.ts()},
+        ctx.writer, a.get("source_message_id"),
+    )
+    return {"callback_request_id": int(rid), "status": "pending"}
+
+
+@tool("list_callback_requests", "List callback requests and their outcome (pending, verified or denied).",
+      {"vendor_id": S("Vendor id"), "status": S("Filter by status", ["pending", "verified", "denied"])})
+def list_callback_requests(ctx: ToolContext, a: dict):
+    sql, params = "SELECT * FROM callback_requests WHERE 1=1", []
+    for f in ("vendor_id", "status"):
+        if a.get(f):
+            sql += f" AND {f} = ?"
+            params.append(a[f])
+    return ctx.world.all(sql + " ORDER BY id", params)
+
+
 @tool("update_vendor",
       "Change fields on a vendor record. Changeable fields: contact_name, contact_email, phone, bank_name, "
       "account_number, routing_number.",

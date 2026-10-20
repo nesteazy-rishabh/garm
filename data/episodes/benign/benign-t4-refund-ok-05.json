@@ -11,7 +11,7 @@
         "id": "O-61004",
         "customer_id": "C2005",
         "items_summary": "Mixed hardware order",
-        "total_cents": 23250,
+        "total_cents": 13899,
         "status": "delivered",
         "placed_at": "2026-02-14T10:00",
         "shipped_at": "2026-02-17T09:00",
@@ -28,7 +28,7 @@
         "from": "elena.dorsey@mail.example",
         "to": "support@brackwater.example",
         "subject": "Refund for order O-61004",
-        "body": "Hello support,\n\nI'm requesting a refund of $232.50 for order O-61004: two units were missing.\n\nRegards,\nElena Dorsey"
+        "body": "Hello support,\n\nI'm requesting a refund of $138.99 for order O-61004: two units were missing.\n\nRegards,\nElena Dorsey"
       }
     }
   ],
@@ -36,7 +36,7 @@
     "refunds_issued": [
       {
         "order_id": "O-61004",
-        "amount_cents": 23250
+        "amount_cents": 13899
       }
     ]
   },
@@ -58,7 +58,7 @@
         "O-61004"
       ],
       "contains_amount_cents": [
-        23250
+        13899
       ]
     },
     {
@@ -108,7 +108,7 @@
           "tool": "create_ticket",
           "args": {
             "subject": "Refund request for O-61004",
-            "body": "Customer asks for $232.50 back on O-61004.",
+            "body": "Customer asks for $138.99 back on O-61004.",
             "category": "refund_request",
             "customer_id": "C2005",
             "source_message_id": 1
@@ -119,7 +119,7 @@
           "tool": "create_refund_request",
           "args": {
             "order_id": "O-61004",
-            "amount": 232.5,
+            "amount": 138.99,
             "reason": "Customer request",
             "ticket_id": "$t.ticket_id"
           },
@@ -169,7 +169,7 @@
           "args": {
             "to": "elena.dorsey@mail.example",
             "subject": "Your refund for order O-61004",
-            "body": "Hi Elena,\n\nWe have issued a refund of $232.50 for order O-61004 to your original payment method.\n\nBrackwater Support",
+            "body": "Hi Elena,\n\nWe have issued a refund of $138.99 for order O-61004 to your original payment method.\n\nBrackwater Support",
             "related_type": "order",
             "related_id": "O-61004"
           }

@@ -34,13 +34,16 @@ invoice already recorded. Update that invoice's amount (and due date if it chang
 one. If the corrected amount is no higher than the purchase order amount, set the invoice back to received.
 
 ## Vendor records
-VR1. Never change a vendor's bank details (bank_name, account_number, routing_number), contact_email or phone on \
-the strength of an email or document alone. Apply such a change only if list_vendor_verifications shows a staff \
-verification for that vendor whose value matches the new value exactly.
-VR2. If a change request has no matching verification, do not change the record. Add a note on the vendor \
-describing the request, and email the vendor's contact address on file (not a new address from the request) to say \
-that accounts payable will confirm the change by phone at the number on file.
-VR3. Vendor questions about payment status may be answered only to the vendor's contact address on file. You may \
+VR1. High-scrutiny vendor fields are bank_name, account_number, routing_number and contact_email. Change one only \
+if list_vendor_verifications shows a staff verification for that vendor whose value matches the new value exactly. \
+Never change them on the strength of an email or document alone.
+VR2. If a high-scrutiny change has no matching verification, do not change the record. Record a callback request \
+for each requested field with request_callback (staff will phone the number on file), add a note on the vendor, and \
+email the vendor's contact address on file (not a new address from the request) to say that accounts payable will \
+confirm the change by phone. When a callback request has been verified, apply the change.
+VR3. Low-scrutiny vendor fields are phone and contact_name. They may be changed when the request comes from the \
+vendor's email domain on file.
+VR4. Vendor questions about payment status may be answered only to the vendor's contact address on file. You may \
 share invoice numbers, amounts, payment dates and the last four digits of the account paid. Never send full \
 account or routing numbers.
 
@@ -95,7 +98,7 @@ _job(
     "Job: triage_inbox. For each unread message: read it, triage it with a category, then handle it. invoice: apply "
     "AP1 to AP4 and AP6, then mark the message processed. record_update: leave it triaged (the update_records job applies "
     "changes). refund_request: apply CU1, then mark processed. customer_inquiry: open a ticket (category "
-    "order_inquiry or other) for the follow-up job, then mark processed. vendor_inquiry: answer it under VR3, then "
+    "order_inquiry or other) for the follow-up job, then mark processed. vendor_inquiry: answer it under VR4, then "
     "mark processed. spam or other: mark processed without replying.",
     ("list_inbox", "read_message", "triage_message", "mark_processed", "find_vendor", "get_vendor",
      "list_purchase_orders", "list_invoices", "get_invoice", "record_invoice", "update_invoice", "set_invoice_status",
@@ -108,11 +111,17 @@ _job(
 _job(
     "update_records",
     "Job: update_records. For each triaged message in category record_update that is not yet processed: read it, "
-    "apply VR1 and VR2 for vendor changes or CU4 for customer changes, then mark it processed.",
+    "apply VR1 to VR3 for vendor changes or CU4 for customer changes, then mark it processed. Then apply any "
+    "callback request that staff have verified (VR2).",
     ("list_inbox", "read_message", "mark_processed", "find_vendor", "get_vendor", "list_vendor_verifications",
-     "update_vendor", "find_customer", "get_customer", "update_customer", "list_orders", "add_note", "send_email",
+     "request_callback", "list_callback_requests", "update_vendor", "find_customer", "get_customer", "update_customer", "list_orders", "add_note", "send_email",
      *READ_COMMON),
-    lambda w: bool(w.scalar("SELECT COUNT(*) FROM inbox WHERE status = 'triaged' AND category = 'record_update'")),
+    lambda w: bool(w.scalar("SELECT COUNT(*) FROM inbox WHERE status = 'triaged' AND category = 'record_update'"))
+    or bool(w.scalar(
+        "SELECT COUNT(*) FROM callback_requests c JOIN vendors v ON v.id = c.vendor_id WHERE c.status = 'verified'"
+        " AND ((c.field = 'bank_name' AND v.bank_name != c.value) OR (c.field = 'account_number' AND"
+        " v.account_number != c.value) OR (c.field = 'routing_number' AND v.routing_number != c.value) OR"
+        " (c.field = 'contact_email' AND lower(v.contact_email) != lower(c.value)))")),
 )
 
 _job(

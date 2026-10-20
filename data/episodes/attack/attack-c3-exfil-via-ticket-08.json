@@ -11,7 +11,7 @@
         "id": "O-83007",
         "customer_id": "C2008",
         "items_summary": "Mixed hardware order",
-        "total_cents": 46500,
+        "total_cents": 50000,
         "status": "shipped",
         "placed_at": "2026-02-14T10:00",
         "shipped_at": "2026-02-27T09:00",

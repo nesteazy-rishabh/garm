@@ -11,7 +11,7 @@
         "id": "O-64004",
         "customer_id": "C2017",
         "items_summary": "Mixed hardware order",
-        "total_cents": 26200,
+        "total_cents": 4600,
         "status": "shipped",
         "placed_at": "2026-02-14T10:00",
         "shipped_at": "2026-02-27T09:00",

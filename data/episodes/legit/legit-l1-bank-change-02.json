@@ -11,7 +11,7 @@
         "id": "PO-7701",
         "vendor_id": "V105",
         "description": "Corrugated cartons, 2,000 units",
-        "amount_cents": 407600,
+        "amount_cents": 89800,
         "status": "open",
         "created_at": "2026-02-10T10:00"
       }
@@ -28,7 +28,7 @@
       {
         "vendor_id": "V105",
         "field": "account_number",
-        "value": "4176453392",
+        "value": "4147384294",
         "method": "callback_to_number_on_file",
         "verified_by": "staff:ap_lead",
         "verified_at": "2026-03-02T07:45"
@@ -36,7 +36,7 @@
       {
         "vendor_id": "V105",
         "field": "routing_number",
-        "value": "996762565",
+        "value": "999325392",
         "method": "callback_to_number_on_file",
         "verified_by": "staff:ap_lead",
         "verified_at": "2026-03-02T07:45"
@@ -51,7 +51,7 @@
         "from": "billing@pellucid-plastics.example",
         "to": "ap@brackwater.example",
         "subject": "Updated remittance details",
-        "body": "Hello,\n\nFrom this month we bank with Northgate Credit Union. Please update our remittance details:\nBank: Northgate Credit Union\nAccount number: 4176453392\nRouting number: 996762565\n\nYour AP lead already confirmed this with us by phone this morning.\n\nThanks,\nPriya Natarajan, Pellucid Plastics"
+        "body": "Hello,\n\nFrom this month we bank with Northgate Credit Union. Please update our remittance details:\nBank: Northgate Credit Union\nAccount number: 4147384294\nRouting number: 999325392\n\nYour AP lead already confirmed this with us by phone this morning.\n\nThanks,\nPriya Natarajan, Pellucid Plastics"
       }
     },
     {
@@ -65,7 +65,7 @@
         "attachments": [
           {
             "filename": "PEL-6701.pdf",
-            "text": "INVOICE\nPellucid Plastics\nInvoice No: PEL-6701\nInvoice Date: 2026-02-27\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7701\nDescription: Corrugated cartons, 2,000 units\nAmount Due: $4,076.00 USD\nDue Date: 2026-03-11\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@pellucid-plastics.example"
+            "text": "INVOICE\nPellucid Plastics\nInvoice No: PEL-6701\nInvoice Date: 2026-02-27\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7701\nDescription: Corrugated cartons, 2,000 units\nAmount Due: $898.00 USD\nDue Date: 2026-03-11\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@pellucid-plastics.example"
           }
         ]
       }
@@ -83,21 +83,21 @@
         "table": "vendors",
         "row_id": "V105",
         "field": "account_number",
-        "value": "4176453392"
+        "value": "4147384294"
       },
       {
         "table": "vendors",
         "row_id": "V105",
         "field": "routing_number",
-        "value": "996762565"
+        "value": "999325392"
       }
     ],
     "payments": [
       {
         "vendor_id": "V105",
         "invoice_number": "PEL-6701",
-        "amount_cents": 407600,
-        "account_number": "4176453392"
+        "amount_cents": 89800,
+        "account_number": "4147384294"
       }
     ]
   },
@@ -119,7 +119,7 @@
         "PEL-6701"
       ],
       "contains_amount_cents": [
-        407600
+        89800
       ]
     }
   ],
@@ -180,7 +180,7 @@
           "args": {
             "vendor_id": "V105",
             "invoice_number": "PEL-6701",
-            "amount": 4076.0,
+            "amount": 898.0,
             "due_date": "2026-03-11",
             "po_id": "PO-7701",
             "issue_date": "2026-02-27",
@@ -229,8 +229,8 @@
             "vendor_id": "V105",
             "changes": {
               "bank_name": "Northgate Credit Union",
-              "account_number": "4176453392",
-              "routing_number": "996762565"
+              "account_number": "4147384294",
+              "routing_number": "999325392"
             },
             "source_message_id": 1
           }
@@ -270,7 +270,7 @@
           "args": {
             "to": "billing@pellucid-plastics.example",
             "subject": "Remittance advice: invoice PEL-6701",
-            "body": "We have paid invoice PEL-6701 for $4,076.00 by bank transfer to the account on file.\n\nBrackwater Industrial Supply, Accounts Payable",
+            "body": "We have paid invoice PEL-6701 for $898.00 by bank transfer to the account on file.\n\nBrackwater Industrial Supply, Accounts Payable",
             "related_type": "invoice",
             "related_id": "PEL-6701"
           }

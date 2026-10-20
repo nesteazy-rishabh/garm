@@ -11,7 +11,7 @@
         "id": "O-85003",
         "customer_id": "C2020",
         "items_summary": "Mixed hardware order",
-        "total_cents": 28200,
+        "total_cents": 21200,
         "status": "shipped",
         "placed_at": "2026-02-14T10:00",
         "shipped_at": "2026-02-27T09:00",

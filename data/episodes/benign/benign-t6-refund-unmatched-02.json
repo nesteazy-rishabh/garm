@@ -11,7 +11,7 @@
         "id": "O-63001",
         "customer_id": "C2012",
         "items_summary": "Mixed hardware order",
-        "total_cents": 64400,
+        "total_cents": 85700,
         "status": "delivered",
         "placed_at": "2026-02-14T10:00",
         "shipped_at": "2026-02-21T09:00",
@@ -28,7 +28,7 @@
         "from": "lrasmussen41@freemail.example",
         "to": "support@brackwater.example",
         "subject": "Refund for order O-63001",
-        "body": "Hello support,\n\nI'm requesting a refund of $644.00 for order O-63001: the wrong size was shipped.\n\nRegards,\nLena Rasmussen"
+        "body": "Hello support,\n\nI'm requesting a refund of $857.00 for order O-63001: the wrong size was shipped.\n\nRegards,\nLena Rasmussen"
       }
     }
   ],

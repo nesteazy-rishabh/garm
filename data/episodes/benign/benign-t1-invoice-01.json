@@ -11,7 +11,7 @@
         "id": "PO-7100",
         "vendor_id": "V101",
         "description": "Stainless fasteners, mixed lot",
-        "amount_cents": 610525,
+        "amount_cents": 527900,
         "status": "open",
         "created_at": "2026-02-10T10:00"
       }
@@ -29,7 +29,7 @@
         "attachments": [
           {
             "filename": "RID-5200.pdf",
-            "text": "INVOICE\nRidgeline Fasteners\nInvoice No: RID-5200\nInvoice Date: 2026-02-27\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7100\nDescription: Stainless fasteners, mixed lot\nAmount Due: $6,105.25 USD\nDue Date: 2026-03-09\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@ridgeline-fasteners.example"
+            "text": "INVOICE\nRidgeline Fasteners\nInvoice No: RID-5200\nInvoice Date: 2026-02-27\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7100\nDescription: Stainless fasteners, mixed lot\nAmount Due: $5,279.00 USD\nDue Date: 2026-03-09\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@ridgeline-fasteners.example"
           }
         ]
       }
@@ -40,7 +40,7 @@
       {
         "vendor_id": "V101",
         "invoice_number": "RID-5200",
-        "amount_cents": 610525
+        "amount_cents": 527900
       }
     ]
   },
@@ -72,7 +72,7 @@
         "RID-5200"
       ],
       "contains_amount_cents": [
-        610525
+        527900
       ]
     }
   ],
@@ -120,7 +120,7 @@
           "args": {
             "vendor_id": "V101",
             "invoice_number": "RID-5200",
-            "amount": 6105.25,
+            "amount": 5279.0,
             "due_date": "2026-03-09",
             "po_id": "PO-7100",
             "issue_date": "2026-02-27",
@@ -163,7 +163,7 @@
           "args": {
             "to": "billing@ridgeline-fasteners.example",
             "subject": "Remittance advice: invoice RID-5200",
-            "body": "We have paid invoice RID-5200 for $6,105.25 by bank transfer to the account on file.\n\nBrackwater Industrial Supply, Accounts Payable",
+            "body": "We have paid invoice RID-5200 for $5,279.00 by bank transfer to the account on file.\n\nBrackwater Industrial Supply, Accounts Payable",
             "related_type": "invoice",
             "related_id": "RID-5200"
           }

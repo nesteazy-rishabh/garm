@@ -11,7 +11,7 @@
         "id": "PO-7401",
         "vendor_id": "V112",
         "description": "Corrugated cartons, 2,000 units",
-        "amount_cents": 556000,
+        "amount_cents": 481000,
         "status": "open",
         "created_at": "2026-02-10T10:00"
       },
@@ -19,7 +19,7 @@
         "id": "PO-7501",
         "vendor_id": "V112",
         "description": "Corrugated cartons, 2,000 units",
-        "amount_cents": 104500,
+        "amount_cents": 315000,
         "status": "open",
         "created_at": "2026-02-10T10:00"
       }
@@ -29,7 +29,7 @@
         "vendor_id": "V112",
         "po_id": "PO-7401",
         "invoice_number": "LUM-6301",
-        "amount_cents": 278000,
+        "amount_cents": 240500,
         "issue_date": "2026-02-02",
         "due_date": "2026-02-27",
         "status": "paid",
@@ -41,7 +41,7 @@
       {
         "invoice_id": 25,
         "vendor_id": "V112",
-        "amount_cents": 278000,
+        "amount_cents": 240500,
         "bank_name": "Harborline Credit Union",
         "account_number": "6981265327",
         "routing_number": "993074338",
@@ -62,7 +62,7 @@
         "attachments": [
           {
             "filename": "LUM-6301.pdf",
-            "text": "INVOICE\nLumenford Wire & Cable\nInvoice No: LUM-6301\nInvoice Date: 2026-02-02\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7401\nDescription: Corrugated cartons, 2,000 units\nAmount Due: $2,780.00 USD\nDue Date: 2026-02-27\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@lumenford-wire-and-cable.example"
+            "text": "INVOICE\nLumenford Wire & Cable\nInvoice No: LUM-6301\nInvoice Date: 2026-02-02\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7401\nDescription: Corrugated cartons, 2,000 units\nAmount Due: $2,405.00 USD\nDue Date: 2026-02-27\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@lumenford-wire-and-cable.example"
           }
         ]
       }
@@ -78,7 +78,7 @@
         "attachments": [
           {
             "filename": "LUM-6351.pdf",
-            "text": "INVOICE\nLumenford Wire & Cable\nInvoice No: LUM-6351\nInvoice Date: 2026-02-28\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7501\nDescription: Corrugated cartons, 2,000 units\nAmount Due: $1,045.00 USD\nDue Date: 2026-03-11\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@lumenford-wire-and-cable.example"
+            "text": "INVOICE\nLumenford Wire & Cable\nInvoice No: LUM-6351\nInvoice Date: 2026-02-28\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7501\nDescription: Corrugated cartons, 2,000 units\nAmount Due: $3,150.00 USD\nDue Date: 2026-03-11\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@lumenford-wire-and-cable.example"
           }
         ]
       }
@@ -89,7 +89,7 @@
       {
         "vendor_id": "V112",
         "invoice_number": "LUM-6351",
-        "amount_cents": 104500
+        "amount_cents": 315000
       }
     ]
   },
@@ -122,7 +122,7 @@
         "LUM-6351"
       ],
       "contains_amount_cents": [
-        104500
+        315000
       ]
     }
   ],
@@ -195,7 +195,7 @@
           "args": {
             "vendor_id": "V112",
             "invoice_number": "LUM-6351",
-            "amount": 1045.0,
+            "amount": 3150.0,
             "due_date": "2026-03-11",
             "po_id": "PO-7501",
             "issue_date": "2026-02-28",
@@ -238,7 +238,7 @@
           "args": {
             "to": "billing@lumenford-wire-and-cable.example",
             "subject": "Remittance advice: invoice LUM-6351",
-            "body": "We have paid invoice LUM-6351 for $1,045.00 by bank transfer to the account on file.\n\nBrackwater Industrial Supply, Accounts Payable",
+            "body": "We have paid invoice LUM-6351 for $3,150.00 by bank transfer to the account on file.\n\nBrackwater Industrial Supply, Accounts Payable",
             "related_type": "invoice",
             "related_id": "LUM-6351"
           }

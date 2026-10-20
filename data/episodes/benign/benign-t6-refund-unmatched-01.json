@@ -11,7 +11,7 @@
         "id": "O-63000",
         "customer_id": "C2011",
         "items_summary": "Mixed hardware order",
-        "total_cents": 79600,
+        "total_cents": 68400,
         "status": "delivered",
         "placed_at": "2026-02-14T10:00",
         "shipped_at": "2026-02-21T09:00",
@@ -28,7 +28,7 @@
         "from": "kkettering40@freemail.example",
         "to": "support@brackwater.example",
         "subject": "Refund for order O-63000",
-        "body": "Hi,\n\nOrder O-63000 arrived but half the box was damaged in transit. I'd like a refund of $796.00, please.\n\nThanks,\nKofi Kettering"
+        "body": "Hi,\n\nOrder O-63000 arrived but half the box was damaged in transit. I'd like a refund of $684.00, please.\n\nThanks,\nKofi Kettering"
       }
     }
   ],

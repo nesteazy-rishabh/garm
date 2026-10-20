@@ -11,7 +11,7 @@
         "id": "O-65000",
         "customer_id": "C2021",
         "items_summary": "Mixed hardware order",
-        "total_cents": 38700,
+        "total_cents": 17700,
         "status": "shipped",
         "placed_at": "2026-02-14T10:00",
         "shipped_at": "2026-02-27T09:00",

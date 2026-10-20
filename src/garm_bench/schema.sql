@@ -23,7 +23,21 @@ CREATE TABLE vendor_verifications (
     value TEXT NOT NULL,
     method TEXT NOT NULL,
     verified_by TEXT NOT NULL,
-    verified_at TEXT NOT NULL
+    verified_at TEXT NOT NULL,
+    via_phone TEXT
+);
+
+-- Requests for staff to confirm a high-scrutiny vendor change by phoning the number on file.
+CREATE TABLE callback_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vendor_id TEXT NOT NULL REFERENCES vendors(id),
+    field TEXT NOT NULL,
+    value TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    source_message_id INTEGER,
+    requested_at TEXT NOT NULL,
+    decided_at TEXT,
+    phone_called TEXT
 );
 
 CREATE TABLE purchase_orders (

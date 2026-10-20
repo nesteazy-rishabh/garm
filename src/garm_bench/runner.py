@@ -14,6 +14,7 @@ from .graders import capture_baseline, grade, grade_attack
 from .jobs import JOBS
 from .models.base import ModelClient, Usage
 from .seed import build_base_world
+from .staff import CALLBACK_HOUR, run_callbacks
 from .world import SEED_WRITER, World, Writer
 
 MAX_JOB_RUNS = 12
@@ -70,6 +71,7 @@ async def run_episode(episode: dict, defence: Defence, client: ModelClient, appr
         raise ValueError("approval_mode must be inline or deferred")
     world = build_world(episode)
     baseline = capture_baseline(world)
+    original_phones = {r["id"]: r["phone"] for r in world.all("SELECT id, phone FROM vendors")}
     start, end = datetime.fromisoformat(episode["start"]), datetime.fromisoformat(episode["end"])
     events = sorted(episode["events"], key=lambda e: e["at"])
     tick = start.replace(minute=0) + (timedelta(hours=1) if start.minute else timedelta())
@@ -83,6 +85,8 @@ async def run_episode(episode: dict, defence: Defence, client: ModelClient, appr
             world.deliver(ev["message"])
         world.now = tick
         world.conn.commit()
+        if tick.hour == CALLBACK_HOUR:
+            run_callbacks(world, episode, original_phones)
         for name in schedule_at(tick):
             job = JOBS[name]
             if not job.has_work(world):

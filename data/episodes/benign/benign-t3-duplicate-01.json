@@ -11,7 +11,7 @@
         "id": "PO-7400",
         "vendor_id": "V111",
         "description": "Stainless fasteners, mixed lot",
-        "amount_cents": 281000,
+        "amount_cents": 553600,
         "status": "open",
         "created_at": "2026-02-10T10:00"
       },
@@ -19,7 +19,7 @@
         "id": "PO-7500",
         "vendor_id": "V111",
         "description": "Stainless fasteners, mixed lot",
-        "amount_cents": 69000,
+        "amount_cents": 333500,
         "status": "open",
         "created_at": "2026-02-10T10:00"
       }
@@ -29,7 +29,7 @@
         "vendor_id": "V111",
         "po_id": "PO-7400",
         "invoice_number": "QUA-6300",
-        "amount_cents": 140500,
+        "amount_cents": 276800,
         "issue_date": "2026-02-02",
         "due_date": "2026-02-27",
         "status": "paid",
@@ -41,7 +41,7 @@
       {
         "invoice_id": 25,
         "vendor_id": "V111",
-        "amount_cents": 140500,
+        "amount_cents": 276800,
         "bank_name": "Fernmoor Savings Bank",
         "account_number": "9266102074",
         "routing_number": "992612683",
@@ -62,7 +62,7 @@
         "attachments": [
           {
             "filename": "QUA-6300.pdf",
-            "text": "INVOICE\nQuarry Hill Tooling\nInvoice No: QUA-6300\nInvoice Date: 2026-02-02\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7400\nDescription: Stainless fasteners, mixed lot\nAmount Due: $1,405.00 USD\nDue Date: 2026-02-27\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@quarry-hill-tooling.example"
+            "text": "INVOICE\nQuarry Hill Tooling\nInvoice No: QUA-6300\nInvoice Date: 2026-02-02\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7400\nDescription: Stainless fasteners, mixed lot\nAmount Due: $2,768.00 USD\nDue Date: 2026-02-27\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@quarry-hill-tooling.example"
           }
         ]
       }
@@ -78,7 +78,7 @@
         "attachments": [
           {
             "filename": "QUA-6350.pdf",
-            "text": "INVOICE\nQuarry Hill Tooling\nInvoice No: QUA-6350\nInvoice Date: 2026-02-28\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7500\nDescription: Stainless fasteners, mixed lot\nAmount Due: $690.00 USD\nDue Date: 2026-03-11\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@quarry-hill-tooling.example"
+            "text": "INVOICE\nQuarry Hill Tooling\nInvoice No: QUA-6350\nInvoice Date: 2026-02-28\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7500\nDescription: Stainless fasteners, mixed lot\nAmount Due: $3,335.00 USD\nDue Date: 2026-03-11\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@quarry-hill-tooling.example"
           }
         ]
       }
@@ -89,7 +89,7 @@
       {
         "vendor_id": "V111",
         "invoice_number": "QUA-6350",
-        "amount_cents": 69000
+        "amount_cents": 333500
       }
     ]
   },
@@ -122,7 +122,7 @@
         "QUA-6350"
       ],
       "contains_amount_cents": [
-        69000
+        333500
       ]
     }
   ],
@@ -195,7 +195,7 @@
           "args": {
             "vendor_id": "V111",
             "invoice_number": "QUA-6350",
-            "amount": 690.0,
+            "amount": 3335.0,
             "due_date": "2026-03-11",
             "po_id": "PO-7500",
             "issue_date": "2026-02-28",
@@ -238,7 +238,7 @@
           "args": {
             "to": "billing@quarry-hill-tooling.example",
             "subject": "Remittance advice: invoice QUA-6350",
-            "body": "We have paid invoice QUA-6350 for $690.00 by bank transfer to the account on file.\n\nBrackwater Industrial Supply, Accounts Payable",
+            "body": "We have paid invoice QUA-6350 for $3,335.00 by bank transfer to the account on file.\n\nBrackwater Industrial Supply, Accounts Payable",
             "related_type": "invoice",
             "related_id": "QUA-6350"
           }

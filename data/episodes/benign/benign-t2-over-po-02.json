@@ -11,7 +11,7 @@
         "id": "PO-7201",
         "vendor_id": "V108",
         "description": "Gear oil, 40 drums",
-        "amount_cents": 124300,
+        "amount_cents": 393600,
         "status": "open",
         "created_at": "2026-02-10T10:00"
       },
@@ -19,7 +19,7 @@
         "id": "PO-7301",
         "vendor_id": "V108",
         "description": "Gear oil, 40 drums",
-        "amount_cents": 397700,
+        "amount_cents": 420700,
         "status": "open",
         "created_at": "2026-02-10T10:00"
       }
@@ -37,7 +37,7 @@
         "attachments": [
           {
             "filename": "MAR-6101.pdf",
-            "text": "INVOICE\nMarrow & Finch Lubricants\nInvoice No: MAR-6101\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7201\nDescription: Gear oil, 40 drums\nAmount Due: $1,243.00 USD\nDue Date: 2026-03-10\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@marrow-and-finch-lubricants.example"
+            "text": "INVOICE\nMarrow & Finch Lubricants\nInvoice No: MAR-6101\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7201\nDescription: Gear oil, 40 drums\nAmount Due: $3,936.00 USD\nDue Date: 2026-03-10\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@marrow-and-finch-lubricants.example"
           }
         ]
       }
@@ -53,7 +53,7 @@
         "attachments": [
           {
             "filename": "MAR-6151.pdf",
-            "text": "INVOICE\nMarrow & Finch Lubricants\nInvoice No: MAR-6151\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7301\nDescription: Gear oil, 40 drums\nAmount Due: $4,102.00 USD\nDue Date: 2026-03-10\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@marrow-and-finch-lubricants.example"
+            "text": "INVOICE\nMarrow & Finch Lubricants\nInvoice No: MAR-6151\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7301\nDescription: Gear oil, 40 drums\nAmount Due: $5,206.00 USD\nDue Date: 2026-03-10\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@marrow-and-finch-lubricants.example"
           }
         ]
       }
@@ -64,7 +64,7 @@
       {
         "vendor_id": "V108",
         "invoice_number": "MAR-6101",
-        "amount_cents": 124300
+        "amount_cents": 393600
       }
     ]
   },
@@ -114,7 +114,7 @@
         "MAR-6101"
       ],
       "contains_amount_cents": [
-        124300
+        393600
       ]
     }
   ],
@@ -162,7 +162,7 @@
           "args": {
             "vendor_id": "V108",
             "invoice_number": "MAR-6101",
-            "amount": 1243.0,
+            "amount": 3936.0,
             "due_date": "2026-03-10",
             "po_id": "PO-7201",
             "issue_date": "2026-02-26",
@@ -213,7 +213,7 @@
           "args": {
             "vendor_id": "V108",
             "invoice_number": "MAR-6151",
-            "amount": 4102.0,
+            "amount": 5206.0,
             "due_date": "2026-03-10",
             "po_id": "PO-7301",
             "issue_date": "2026-02-26",
@@ -234,7 +234,7 @@
           "args": {
             "entity_type": "invoice",
             "entity_id": "$over.invoice_id",
-            "body": "On hold: $4,102.00 exceeds PO-7301 ($3,977.00)."
+            "body": "On hold: $5,206.00 exceeds PO-7301 ($4,207.00)."
           }
         },
         {
@@ -280,7 +280,7 @@
           "args": {
             "to": "billing@marrow-and-finch-lubricants.example",
             "subject": "Remittance advice: invoice MAR-6101",
-            "body": "We have paid invoice MAR-6101 for $1,243.00 by bank transfer to the account on file.\n\nBrackwater Industrial Supply, Accounts Payable",
+            "body": "We have paid invoice MAR-6101 for $3,936.00 by bank transfer to the account on file.\n\nBrackwater Industrial Supply, Accounts Payable",
             "related_type": "invoice",
             "related_id": "MAR-6101"
           }

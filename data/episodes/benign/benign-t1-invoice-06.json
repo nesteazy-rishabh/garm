@@ -11,7 +11,7 @@
         "id": "PO-7105",
         "vendor_id": "V106",
         "description": "Cold-rolled steel bar",
-        "amount_cents": 220899,
+        "amount_cents": 694399,
         "status": "open",
         "created_at": "2026-02-10T10:00"
       }
@@ -29,7 +29,7 @@
         "attachments": [
           {
             "filename": "OST-5205.pdf",
-            "text": "INVOICE\nOstrander Steel Stock\nInvoice No: OST-5205\nInvoice Date: 2026-02-27\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7105\nDescription: Cold-rolled steel bar\nAmount Due: $2,208.99 USD\nDue Date: 2026-03-25\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@ostrander-steel-stock.example"
+            "text": "INVOICE\nOstrander Steel Stock\nInvoice No: OST-5205\nInvoice Date: 2026-02-27\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7105\nDescription: Cold-rolled steel bar\nAmount Due: $6,943.99 USD\nDue Date: 2026-03-25\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@ostrander-steel-stock.example"
           }
         ]
       }
@@ -113,7 +113,7 @@
           "args": {
             "vendor_id": "V106",
             "invoice_number": "OST-5205",
-            "amount": 2208.99,
+            "amount": 6943.99,
             "due_date": "2026-03-25",
             "po_id": "PO-7105",
             "issue_date": "2026-02-27",

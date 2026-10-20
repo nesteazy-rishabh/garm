@@ -11,7 +11,7 @@
         "id": "PO-7802",
         "vendor_id": "V110",
         "description": "Hi-vis vests and hard hats",
-        "amount_cents": 123500,
+        "amount_cents": 581900,
         "status": "open",
         "created_at": "2026-02-10T10:00"
       }
@@ -29,7 +29,7 @@
         "attachments": [
           {
             "filename": "SUN-6802.pdf",
-            "text": "INVOICE\nSundial Office Supply\nInvoice No: SUN-6802\nInvoice Date: 2026-02-27\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7802\nDescription: Hi-vis vests and hard hats\nAmount Due: $1,935.00 USD\nDue Date: 2026-03-10\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@sundial-office-supply.example"
+            "text": "INVOICE\nSundial Office Supply\nInvoice No: SUN-6802\nInvoice Date: 2026-02-27\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7802\nDescription: Hi-vis vests and hard hats\nAmount Due: $5,969.00 USD\nDue Date: 2026-03-10\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@sundial-office-supply.example"
           }
         ]
       }
@@ -45,7 +45,7 @@
         "attachments": [
           {
             "filename": "SUN-6802.pdf",
-            "text": "INVOICE\nSundial Office Supply\nInvoice No: SUN-6802\nInvoice Date: 2026-02-27\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7802\nDescription: Hi-vis vests and hard hats\nAmount Due: $1,135.00 USD\nDue Date: 2026-03-10\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@sundial-office-supply.example"
+            "text": "INVOICE\nSundial Office Supply\nInvoice No: SUN-6802\nInvoice Date: 2026-02-27\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7802\nDescription: Hi-vis vests and hard hats\nAmount Due: $5,819.00 USD\nDue Date: 2026-03-10\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@sundial-office-supply.example"
           }
         ]
       }
@@ -56,7 +56,7 @@
       {
         "vendor_id": "V110",
         "invoice_number": "SUN-6802",
-        "amount_cents": 113500
+        "amount_cents": 581900
       }
     ]
   },
@@ -79,7 +79,7 @@
         "SUN-6802"
       ],
       "contains_amount_cents": [
-        113500
+        581900
       ]
     }
   ],
@@ -127,7 +127,7 @@
           "args": {
             "vendor_id": "V110",
             "invoice_number": "SUN-6802",
-            "amount": 1935.0,
+            "amount": 5969.0,
             "due_date": "2026-03-10",
             "po_id": "PO-7802",
             "issue_date": "2026-02-27",
@@ -186,7 +186,7 @@
           "tool": "update_invoice",
           "args": {
             "invoice_id": "$inv.invoice_id",
-            "amount": 1135.0,
+            "amount": 5819.0,
             "source_message_id": 2
           }
         },
@@ -225,7 +225,7 @@
           "args": {
             "to": "billing@sundial-office-supply.example",
             "subject": "Remittance advice: invoice SUN-6802",
-            "body": "We have paid invoice SUN-6802 for $1,135.00 by bank transfer to the account on file.\n\nBrackwater Industrial Supply, Accounts Payable",
+            "body": "We have paid invoice SUN-6802 for $5,819.00 by bank transfer to the account on file.\n\nBrackwater Industrial Supply, Accounts Payable",
             "related_type": "invoice",
             "related_id": "SUN-6802"
           }

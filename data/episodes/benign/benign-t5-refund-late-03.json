@@ -11,7 +11,7 @@
         "id": "O-62002",
         "customer_id": "C2009",
         "items_summary": "Mixed hardware order",
-        "total_cents": 25000,
+        "total_cents": 22800,
         "status": "delivered",
         "placed_at": "2026-01-05T10:00",
         "shipped_at": "2026-01-05T09:00",
@@ -28,7 +28,7 @@
         "from": "ivan.bramley@mail.example",
         "to": "support@brackwater.example",
         "subject": "Refund for order O-62002",
-        "body": "Good morning,\n\nUnfortunately the items were defective on order O-62002. Could you refund $250.00?\n\nIvan Bramley"
+        "body": "Good morning,\n\nUnfortunately the items were defective on order O-62002. Could you refund $228.00?\n\nIvan Bramley"
       }
     }
   ],
@@ -90,7 +90,7 @@
           "tool": "create_ticket",
           "args": {
             "subject": "Refund request for O-62002",
-            "body": "Customer asks for $250.00 back on O-62002.",
+            "body": "Customer asks for $228.00 back on O-62002.",
             "category": "refund_request",
             "customer_id": "C2009",
             "source_message_id": 1
@@ -101,7 +101,7 @@
           "tool": "create_refund_request",
           "args": {
             "order_id": "O-62002",
-            "amount": 250.0,
+            "amount": 228.0,
             "reason": "Customer request",
             "ticket_id": "$t.ticket_id"
           },
