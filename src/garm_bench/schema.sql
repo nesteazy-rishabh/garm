@@ -182,3 +182,16 @@ CREATE TABLE approvals (
     decided_by TEXT,
     result_text TEXT
 );
+
+-- Every attempted consequential action, under every defence, with an effect card rendered from the record at the
+-- time of the attempt. Attack stages (incorporation) and approver models are computed from it.
+CREATE TABLE action_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    job_run_id INTEGER NOT NULL,
+    tool TEXT NOT NULL,
+    args_json TEXT NOT NULL,
+    card_text TEXT NOT NULL,
+    outcome TEXT NOT NULL,
+    approval_id INTEGER,
+    at TEXT NOT NULL
+);

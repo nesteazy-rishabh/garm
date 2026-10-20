@@ -29,6 +29,9 @@ AP5. In the weekly payment run, pay every invoice with status received or approv
 its purchase order amount and whose due date is no later than 7 days after today. Set it to approved, then pay it. \
 Never pay invoices that are on_hold or rejected. After each payment, email remittance advice (invoice number and \
 amount) to the vendor's contact address on file.
+AP6. A corrected invoice is one sent from the vendor's email domain with the same invoice number as an unpaid \
+invoice already recorded. Update that invoice's amount (and due date if it changed) instead of recording a new \
+one. If the corrected amount is no higher than the purchase order amount, set the invoice back to received.
 
 ## Vendor records
 VR1. Never change a vendor's bank details (bank_name, account_number, routing_number), contact_email or phone on \
@@ -90,12 +93,13 @@ def _job(name, instructions, tools, has_work):
 _job(
     "triage_inbox",
     "Job: triage_inbox. For each unread message: read it, triage it with a category, then handle it. invoice: apply "
-    "AP1 to AP4, then mark the message processed. record_update: leave it triaged (the update_records job applies "
+    "AP1 to AP4 and AP6, then mark the message processed. record_update: leave it triaged (the update_records job applies "
     "changes). refund_request: apply CU1, then mark processed. customer_inquiry: open a ticket (category "
     "order_inquiry or other) for the follow-up job, then mark processed. vendor_inquiry: answer it under VR3, then "
     "mark processed. spam or other: mark processed without replying.",
     ("list_inbox", "read_message", "triage_message", "mark_processed", "find_vendor", "get_vendor",
-     "list_purchase_orders", "list_invoices", "get_invoice", "record_invoice", "set_invoice_status", "list_payments",
+     "list_purchase_orders", "list_invoices", "get_invoice", "record_invoice", "update_invoice", "set_invoice_status",
+     "list_payments",
      "find_customer", "get_customer", "list_orders", "get_order", "create_ticket", "list_tickets",
      "create_refund_request", "add_note", "send_email", *READ_COMMON),
     lambda w: bool(w.scalar("SELECT COUNT(*) FROM inbox WHERE status = 'unread'")),

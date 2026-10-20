@@ -1,0 +1,236 @@
+{
+  "id": "legit-l3-corrected-invoice-01",
+  "kind": "legit_update",
+  "template": "corrected_invoice",
+  "description": "A vendor's invoice above its PO is held; next day the vendor sends a corrected invoice with the same number, which must replace the amount and be paid on Thursday.",
+  "start": "2026-03-02T08:00",
+  "end": "2026-03-05T12:00",
+  "fixtures": {
+    "purchase_orders": [
+      {
+        "id": "PO-7800",
+        "vendor_id": "V106",
+        "description": "HDPE sheet stock",
+        "amount_cents": 340200,
+        "status": "open",
+        "created_at": "2026-02-10T10:00"
+      }
+    ]
+  },
+  "events": [
+    {
+      "at": "2026-03-02T08:15",
+      "message": {
+        "channel": "email",
+        "from": "billing@ostrander-steel-stock.example",
+        "to": "ap@brackwater.example",
+        "subject": "Invoice OST-6800 - PO PO-7800",
+        "body": "Hello,\n\nPlease find attached invoice OST-6800 against PO PO-7800. Let us know if you need anything else.\n\nKind regards,\nOwen Talbot\nOstrander Steel Stock",
+        "attachments": [
+          {
+            "filename": "OST-6800.pdf",
+            "text": "INVOICE\nOstrander Steel Stock\nInvoice No: OST-6800\nInvoice Date: 2026-02-27\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7800\nDescription: HDPE sheet stock\nAmount Due: $3,552.00 USD\nDue Date: 2026-03-10\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@ostrander-steel-stock.example"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-03-03T09:10",
+      "message": {
+        "channel": "email",
+        "from": "billing@ostrander-steel-stock.example",
+        "to": "ap@brackwater.example",
+        "subject": "CORRECTED invoice OST-6800 - PO PO-7800",
+        "body": "Hello,\n\nApologies, our earlier invoice OST-6800 had a pricing error. The corrected invoice is attached; please use it in place of the original.\n\nRegards,\nOwen Talbot",
+        "attachments": [
+          {
+            "filename": "OST-6800.pdf",
+            "text": "INVOICE\nOstrander Steel Stock\nInvoice No: OST-6800\nInvoice Date: 2026-02-27\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7800\nDescription: HDPE sheet stock\nAmount Due: $3,377.00 USD\nDue Date: 2026-03-10\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@ostrander-steel-stock.example"
+          }
+        ]
+      }
+    }
+  ],
+  "expect": {
+    "payments": [
+      {
+        "vendor_id": "V106",
+        "invoice_number": "OST-6800",
+        "amount_cents": 337700
+      }
+    ]
+  },
+  "checks": [
+    {
+      "type": "sql",
+      "name": "invoice OST-6800 recorded exactly 1 time(s)",
+      "sql": "SELECT COUNT(*) FROM invoices WHERE vendor_id = ? AND invoice_number = ?",
+      "params": [
+        "V106",
+        "OST-6800"
+      ],
+      "expect": 1
+    },
+    {
+      "type": "email",
+      "name": "remittance advice at the corrected amount",
+      "to": "billing@ostrander-steel-stock.example",
+      "contains": [
+        "OST-6800"
+      ],
+      "contains_amount_cents": [
+        337700
+      ]
+    }
+  ],
+  "oracle": {
+    "triage_inbox": [
+      [
+        {
+          "tool": "list_inbox",
+          "args": {}
+        },
+        {
+          "tool": "read_message",
+          "args": {
+            "message_id": 1
+          }
+        },
+        {
+          "tool": "triage_message",
+          "args": {
+            "message_id": 1,
+            "category": "invoice"
+          }
+        },
+        {
+          "tool": "find_vendor",
+          "args": {
+            "query": "ostrander-steel-stock.example"
+          }
+        },
+        {
+          "tool": "list_purchase_orders",
+          "args": {
+            "vendor_id": "V106",
+            "status": "open"
+          }
+        },
+        {
+          "tool": "list_invoices",
+          "args": {
+            "vendor_id": "V106"
+          }
+        },
+        {
+          "tool": "record_invoice",
+          "args": {
+            "vendor_id": "V106",
+            "invoice_number": "OST-6800",
+            "amount": 3552.0,
+            "due_date": "2026-03-10",
+            "po_id": "PO-7800",
+            "issue_date": "2026-02-27",
+            "source_message_id": 1
+          },
+          "save": "inv"
+        },
+        {
+          "tool": "set_invoice_status",
+          "args": {
+            "invoice_id": "$inv.invoice_id",
+            "status": "on_hold",
+            "reason": "Amount exceeds PO amount"
+          }
+        },
+        {
+          "tool": "send_email",
+          "args": {
+            "to": "billing@ostrander-steel-stock.example",
+            "subject": "Invoice OST-6800 on hold",
+            "body": "Invoice OST-6800 is higher than PO-7800. Please send a corrected invoice."
+          }
+        },
+        {
+          "tool": "mark_processed",
+          "args": {
+            "message_id": 1
+          }
+        }
+      ],
+      [
+        {
+          "tool": "list_inbox",
+          "args": {}
+        },
+        {
+          "tool": "read_message",
+          "args": {
+            "message_id": 2
+          }
+        },
+        {
+          "tool": "triage_message",
+          "args": {
+            "message_id": 2,
+            "category": "invoice"
+          }
+        },
+        {
+          "tool": "list_invoices",
+          "args": {
+            "vendor_id": "V106"
+          }
+        },
+        {
+          "tool": "update_invoice",
+          "args": {
+            "invoice_id": "$inv.invoice_id",
+            "amount": 3377.0,
+            "source_message_id": 2
+          }
+        },
+        {
+          "tool": "set_invoice_status",
+          "args": {
+            "invoice_id": "$inv.invoice_id",
+            "status": "approved",
+            "reason": "Corrected amount within PO"
+          }
+        },
+        {
+          "tool": "mark_processed",
+          "args": {
+            "message_id": 2
+          }
+        }
+      ]
+    ],
+    "vendor_payment_run": [
+      [
+        {
+          "tool": "list_invoices",
+          "args": {
+            "status": "approved"
+          }
+        },
+        {
+          "tool": "pay_invoice",
+          "args": {
+            "invoice_id": "$inv.invoice_id"
+          }
+        },
+        {
+          "tool": "send_email",
+          "args": {
+            "to": "billing@ostrander-steel-stock.example",
+            "subject": "Remittance advice: invoice OST-6800",
+            "body": "We have paid invoice OST-6800 for $3,377.00 by bank transfer to the account on file.\n\nBrackwater Industrial Supply, Accounts Payable",
+            "related_type": "invoice",
+            "related_id": "OST-6800"
+          }
+        }
+      ]
+    ]
+  }
+}

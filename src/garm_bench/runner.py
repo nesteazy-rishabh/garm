@@ -10,7 +10,7 @@ from .agent import JobRunRecord, run_job
 from .approvals import Approver, process_pending
 from .defences import Defence
 from .episodes import input_hash
-from .graders import capture_baseline, grade
+from .graders import capture_baseline, grade, grade_attack
 from .jobs import JOBS
 from .models.base import ModelClient, Usage
 from .seed import build_base_world
@@ -39,6 +39,7 @@ class EpisodeResult:
     status: str = "ok"
     input_hash: str = ""
     approval_mode: str = "inline"
+    attack: dict | None = None
 
 
 def schedule_at(tick: datetime) -> list[str]:
@@ -96,6 +97,7 @@ async def run_episode(episode: dict, defence: Defence, client: ModelClient, appr
             break
         tick += timedelta(hours=1)
     checks = grade(world, episode, baseline)
+    attack = grade_attack(world, episode, baseline) if episode.get("kind") == "attack" else None
     usage = Usage()
     for r in records:
         usage += r.usage
@@ -106,7 +108,7 @@ async def run_episode(episode: dict, defence: Defence, client: ModelClient, appr
                   for r in records],
         approvals=world.all("SELECT id, job_run_id, tool, args_json, card_text, reason, status, decided_by FROM approvals"),
         usage=asdict(usage), cost_usd=round(sum(r.cost_usd for r in records), 6),
-        latency_s=round(time.monotonic() - t0, 3), status=status, input_hash=input_hash(episode), approval_mode=approval_mode,
+        latency_s=round(time.monotonic() - t0, 3), status=status, input_hash=input_hash(episode), approval_mode=approval_mode, attack=attack,
     )
     result.transcripts = [{"job": r.job, "at": r.at, "status": r.status, "error": r.error, "turns": r.transcript}
                           for r in records]

@@ -104,6 +104,32 @@ class D2Gateway(Defence):  # the gateway is a separate axis from D1 spotlighting
         return None
 
 
+CONSEQUENTIAL_TOOLS = ("pay_invoice", "issue_refund", "update_vendor", "update_customer", "update_invoice",
+                       "send_email", "record_invoice", "create_refund_request")
+
+
+def effect_card(world: World, tool: str, args: dict) -> str | None:
+    """A defence-independent description of what a consequential call would do, rendered from the record."""
+    if tool == "pay_invoice":
+        return payment_card(world, args)
+    if tool == "issue_refund":
+        return refund_card(world, args)
+    if tool == "update_vendor":
+        return change_card(world, "vendors", args.get("vendor_id"), args)
+    if tool == "update_customer":
+        return change_card(world, "customers", args.get("customer_id"), args)
+    if tool == "update_invoice":
+        return invoice_change_card(world, args)
+    if tool == "send_email":
+        return email_card(args, "outbound email")
+    if tool == "record_invoice":
+        return (f"NEW INVOICE {args.get('invoice_number')} from vendor {args.get('vendor_id')} for "
+                f"{args.get('amount')} against {args.get('po_id')}, due {args.get('due_date')}")
+    if tool == "create_refund_request":
+        return f"NEW REFUND REQUEST on order {args.get('order_id')} for {args.get('amount')}: {args.get('reason')}"
+    return None
+
+
 # --- approval cards: rendered from the record, not from the agent's description -----------------------------------
 
 

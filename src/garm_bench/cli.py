@@ -171,7 +171,7 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="garm")
     sub = p.add_subparsers(dest="cmd", required=True)
     v = sub.add_parser("validate", help="check episodes and graders offline")
-    v.add_argument("--split", default="benign")
+    v.add_argument("--split", default="benign", choices=["benign", "legit", "attack"])
     v.add_argument("--episodes", nargs="*")
     v.set_defaults(fn=cmd_validate)
     g = sub.add_parser("regrade", help="re-score a finished run with the current graders (no API calls)")

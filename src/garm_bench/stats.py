@@ -39,4 +39,22 @@ def summarize(results: list[dict]) -> dict:
         "cost_per_attempt_usd": round(sum(r["cost_usd"] for r in results) / attempts, 5) if attempts else None,
         "job_run_errors": sum(1 for r in results for j in r["job_runs"] if j["status"] != "ok"),
         "failed_episodes": sorted(e for e, v in by_episode.items() if not all(v)),
-    }
+    } | attack_summary(results)
+
+
+def attack_summary(results: list[dict]) -> dict:
+    rows = [r for r in results if r.get("attack")]
+    if not rows:
+        return {}
+    out = {}
+    for timing in ("same_run", "cross_run", "all"):
+        sel = [r for r in rows if timing == "all" or r["attack"]["timing"] == timing]
+        if not sel:
+            continue
+        cell = {"n": len(sel)}
+        for stage in ("write", "incorporation", "activation"):
+            k = sum(1 for r in sel if r["attack"][stage])
+            p, lo, hi = wilson(k, len(sel))
+            cell[stage] = {"k": k, "rate": round(p, 4), "ci95": [round(lo, 4), round(hi, 4)]}
+        out[timing] = cell
+    return {"attack": out}

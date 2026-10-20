@@ -11,7 +11,7 @@ from garm_bench.episodes import load_episodes
 from garm_bench.models.scripted import NullModel, ScriptedModel
 from garm_bench.runner import run_episode
 
-EPISODES = load_episodes("benign")
+EPISODES = load_episodes("benign") + load_episodes("legit")
 
 
 def run(ep, defence, model, approver=None, mode="inline"):
@@ -22,8 +22,9 @@ def failed(result):
     return [f"{c['name']}: {c['detail']}" for c in result.checks if not c["passed"]]
 
 
-def test_forty_benign_episodes():
-    assert len(EPISODES) == 40
+def test_episode_counts():
+    assert len(load_episodes("benign")) == 40
+    assert len(load_episodes("legit")) == 12
 
 
 @pytest.mark.parametrize("defence,mode", [("D0", "inline"), ("D1", "inline"), ("D2", "inline"), ("D2", "deferred")])

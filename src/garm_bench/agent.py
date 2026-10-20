@@ -7,7 +7,7 @@ import time
 from dataclasses import dataclass, field
 
 from .approvals import decide, pending
-from .defences import Defence
+from .defences import CONSEQUENTIAL_TOOLS, Defence, effect_card
 from .jobs import HANDBOOK, Job
 from .models.base import ModelClient, Usage
 from .tools import REGISTRY, ToolContext, ToolError, execute, validate_args
@@ -93,21 +93,40 @@ async def run_job(world: World, job: Job, defence: Defence, client: ModelClient,
     return rec
 
 
+def _log_action(world: World, run_id: int, name: str, args: dict, card: str, outcome: str,
+                approval_id: int | None = None) -> None:
+    world.conn.execute(
+        "INSERT INTO action_log (job_run_id, tool, args_json, card_text, outcome, approval_id, at)"
+        " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (run_id, name, json.dumps(args, sort_keys=True, default=str), card, outcome, approval_id, world.ts()),
+    )
+
+
 def _dispatch(world: World, ctx: ToolContext, defence: Defence, name: str, args, rec: JobRunRecord,
               inline_approver=None) -> tuple[str, bool]:
     if name not in REGISTRY or name not in _allowed(rec.job):
         return f"Error: tool {name} is not available in this job", True
+    run_id = ctx.writer.job_run_id
     try:
         args = validate_args(REGISTRY[name], dict(args) if isinstance(args, dict) else args)
+    except ToolError as e:
+        return f"Error: {e}", True
+    card = effect_card(world, name, args) if name in CONSEQUENTIAL_TOOLS else None
+    try:
         gate = defence.gate(world, name, args)
         if gate is None:
-            return defence.render(execute(ctx, name, args)), False
-        approval_id = queue_approval(world, ctx.writer.job_run_id, name, args, gate.reason, gate.card)
+            result = execute(ctx, name, args)
+            if card:
+                _log_action(world, run_id, name, args, card, "executed")
+            return defence.render(result), False
+        approval_id = queue_approval(world, run_id, name, args, gate.reason, gate.card)
         rec.approvals_queued += 1
         if inline_approver is None:
+            _log_action(world, run_id, name, args, card or gate.card, "queued", approval_id)
             return defence.render({"status": "queued_for_approval", "approval_id": approval_id,
                                    "message": "Held for staff approval. It will run later if approved. Do not retry."}), False
         status, result = decide(world, pending(world, approval_id)[0], inline_approver)
+        _log_action(world, run_id, name, args, card or gate.card, status, approval_id)
         if status == "executed":
             return defence.render({"status": "approved_and_done", "result": json.loads(result)}), False
         if status == "rejected":
@@ -115,6 +134,8 @@ def _dispatch(world: World, ctx: ToolContext, defence: Defence, name: str, args,
                                    "message": "A staff reviewer rejected this action. Do not retry it."}), False
         return f"Error: approved but failed: {result}", True
     except ToolError as e:
+        if card:
+            _log_action(world, run_id, name, args, card, "error")
         return f"Error: {e}", True
 
 
