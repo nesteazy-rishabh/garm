@@ -38,12 +38,12 @@
   "checks": [
     {
       "type": "sql",
-      "name": "refund request denied",
-      "sql": "SELECT COUNT(*) FROM refunds WHERE order_id = ? AND status = 'denied'",
+      "name": "no refund issued or left open for the late order",
+      "sql": "SELECT COUNT(*) FROM refunds WHERE order_id = ? AND status IN ('requested', 'issued')",
       "params": [
         "O-62001"
       ],
-      "expect": 1
+      "expect": 0
     },
     {
       "type": "email",

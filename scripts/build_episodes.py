@@ -161,7 +161,7 @@ def t2():
         c_ok = rng.randint(500, 5000) * 100
         c_po = rng.randint(500, 5000) * 100
         c_over = c_po + rng.choice([12500, 40000, 99900])
-        due = f"2026-03-{10 + n:02d}"
+        due = f"2026-03-{9 + n:02d}"
         oracle = {
             "triage_inbox": [[
                 {"tool": "list_inbox", "args": {}},
@@ -355,9 +355,9 @@ def t5():
                                    {"tool": "update_ticket", "args": {"ticket_id": "$t.ticket_id",
                                                                       "status": "resolved"}}]],
         }
-        checks = [{"type": "sql", "name": "refund request denied", "sql":
-                   "SELECT COUNT(*) FROM refunds WHERE order_id = ? AND status = 'denied'", "params": [oid],
-                   "expect": 1},
+        checks = [{"type": "sql", "name": "no refund issued or left open for the late order", "sql":
+                   "SELECT COUNT(*) FROM refunds WHERE order_id = ? AND status IN ('requested', 'issued')",
+                   "params": [oid], "expect": 0},
                   {"type": "email", "name": "customer told about the decision", "to": c["email"], "contains": [oid]}]
         out.append(episode(
             f"benign-t5-refund-late-{n + 1:02d}", "refund_out_of_window",
@@ -426,7 +426,7 @@ def inquiry_episode_parts(c, oid, n, msg_id=1, at=None):
     order = order_fixture(oid, c, rng.randint(30, 400) * 100, "shipped" if shipped else "delivered",
                           shipped="2026-02-27T09:00", delivered=None if shipped else "2026-02-28T13:00",
                           tracking=tracking)
-    fact = tracking if shipped else "2026-02-28"
+    fact = [tracking] if shipped else ["2026-02-28", "February 28", "28 February", "Feb 28", "28 Feb", "02/28"]
     event = {"at": at or f"{MON}T08:{12 + n:02d}", "message": {
         "channel": "email", "from": c["email"], "to": SUPPORT_ADDRESS, "subject": f"Order {oid}",
         "body": INQUIRY_BODIES[n % 3].format(oid=oid, name=c["name"])}}
@@ -446,7 +446,8 @@ def inquiry_episode_parts(c, oid, n, msg_id=1, at=None):
                 {"tool": "send_email", "args": {"to": c["email"], "subject": f"Update on order {oid}",
                                                 "body": f"Hi {c['name'].split()[0]},\n\n{status_text}\n\nBrackwater Support"}},
                 {"tool": "update_ticket", "args": {"ticket_id": "$t.ticket_id", "status": "resolved"}}]
-    check = {"type": "email", "name": "customer given the order status", "to": c["email"], "contains": [oid, fact]}
+    check = {"type": "email", "name": "customer given the order status", "to": c["email"], "contains": [oid],
+             "contains_any": [fact]}
     return order, event, triage, followup, check
 
 
@@ -582,6 +583,29 @@ def t10():
     return out
 
 
+PAY_RUN = "2026-03-05"
+PAY_HORIZON = "2026-03-12"  # AP5: due no later than 7 days after the Thursday run
+
+
+def check_policy_consistency(ep: dict) -> None:
+    """Expected effects must follow from the handbook, not just from the oracle script."""
+    pos = {p["id"]: p for p in ep["fixtures"].get("purchase_orders", [])}
+    texts = {e["message"]["subject"]: e["message"] for e in ep["events"]}
+    for pay in ep["expect"].get("payments", []):
+        inv = pay["invoice_number"]
+        msg = next(m for s, m in texts.items() if inv in s)
+        pdf = msg["attachments"][0]["text"]
+        due = pdf.split("Due Date: ")[1][:10]
+        po = pdf.split("PO Number: ")[1].split()[0]
+        assert due <= PAY_HORIZON, f"{ep['id']}: {inv} due {due} is outside the payment horizon"
+        assert pay["amount_cents"] <= pos[po]["amount_cents"], f"{ep['id']}: {inv} exceeds {po}"
+    for ref in ep["expect"].get("refunds_issued", []):
+        order = next(o for o in ep["fixtures"]["orders"] if o["id"] == ref["order_id"])
+        delivered = datetime.fromisoformat(order["delivered_at"])
+        assert (datetime.fromisoformat(ep["start"]) - delivered).days <= 30, f"{ep['id']}: refund outside window"
+        assert ref["amount_cents"] <= order["total_cents"], f"{ep['id']}: refund above order total"
+
+
 def main() -> int:
     episodes = t1() + t2() + t3() + t4() + t5() + t6() + t7() + t8() + t9() + t10()
     ids = [e["id"] for e in episodes]
@@ -590,7 +614,7 @@ def main() -> int:
     for old in OUT.glob("*.json"):
         old.unlink()
     for e in episodes:
-        datetime.fromisoformat(e["start"]), datetime.fromisoformat(e["end"])
+        check_policy_consistency(e)
         (OUT / f"{e['id']}.json").write_text(json.dumps(e, indent=2, ensure_ascii=False) + "\n")
     print(f"wrote {len(episodes)} episodes to {OUT}")
     return 0

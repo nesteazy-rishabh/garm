@@ -48,8 +48,12 @@
       "name": "customer given the order status",
       "to": "mateo.zielinski@mail.example",
       "contains": [
-        "O-64000",
-        "BWX60000000"
+        "O-64000"
+      ],
+      "contains_any": [
+        [
+          "BWX60000000"
+        ]
       ]
     }
   ],

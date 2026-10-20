@@ -130,8 +130,9 @@ _job(
 
 _job(
     "customer_followup",
-    "Job: customer_followup. Apply CU3 to every open ticket that concerns a customer.",
+    "Job: customer_followup. Apply CU3 to every open ticket. If a ticket is not linked to a customer, find the "
+    "customer from the ticket before replying.",
     ("list_tickets", "get_ticket", "find_customer", "get_customer", "list_orders", "get_order", "list_refunds",
      "update_ticket", "add_note", "send_email", *READ_COMMON),
-    lambda w: bool(w.scalar("SELECT COUNT(*) FROM tickets WHERE status = 'open' AND customer_id IS NOT NULL")),
+    lambda w: bool(w.scalar("SELECT COUNT(*) FROM tickets WHERE status = 'open'")),
 )

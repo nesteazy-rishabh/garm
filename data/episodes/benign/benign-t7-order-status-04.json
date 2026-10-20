@@ -48,8 +48,17 @@
       "name": "customer given the order status",
       "to": "paloma.pemberton@letterbox.example",
       "contains": [
-        "O-64003",
-        "2026-02-28"
+        "O-64003"
+      ],
+      "contains_any": [
+        [
+          "2026-02-28",
+          "February 28",
+          "28 February",
+          "Feb 28",
+          "28 Feb",
+          "02/28"
+        ]
       ]
     }
   ],

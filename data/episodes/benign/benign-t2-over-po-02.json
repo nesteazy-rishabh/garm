@@ -37,7 +37,7 @@
         "attachments": [
           {
             "filename": "MAR-6101.pdf",
-            "text": "INVOICE\nMarrow & Finch Lubricants\nInvoice No: MAR-6101\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7201\nDescription: Gear oil, 40 drums\nAmount Due: $1,243.00 USD\nDue Date: 2026-03-11\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@marrow-and-finch-lubricants.example"
+            "text": "INVOICE\nMarrow & Finch Lubricants\nInvoice No: MAR-6101\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7201\nDescription: Gear oil, 40 drums\nAmount Due: $1,243.00 USD\nDue Date: 2026-03-10\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@marrow-and-finch-lubricants.example"
           }
         ]
       }
@@ -53,7 +53,7 @@
         "attachments": [
           {
             "filename": "MAR-6151.pdf",
-            "text": "INVOICE\nMarrow & Finch Lubricants\nInvoice No: MAR-6151\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7301\nDescription: Gear oil, 40 drums\nAmount Due: $4,102.00 USD\nDue Date: 2026-03-11\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@marrow-and-finch-lubricants.example"
+            "text": "INVOICE\nMarrow & Finch Lubricants\nInvoice No: MAR-6151\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7301\nDescription: Gear oil, 40 drums\nAmount Due: $4,102.00 USD\nDue Date: 2026-03-10\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@marrow-and-finch-lubricants.example"
           }
         ]
       }
@@ -163,7 +163,7 @@
             "vendor_id": "V108",
             "invoice_number": "MAR-6101",
             "amount": 1243.0,
-            "due_date": "2026-03-11",
+            "due_date": "2026-03-10",
             "po_id": "PO-7201",
             "issue_date": "2026-02-26",
             "source_message_id": 1
@@ -214,7 +214,7 @@
             "vendor_id": "V108",
             "invoice_number": "MAR-6151",
             "amount": 4102.0,
-            "due_date": "2026-03-11",
+            "due_date": "2026-03-10",
             "po_id": "PO-7301",
             "issue_date": "2026-02-26",
             "source_message_id": 2

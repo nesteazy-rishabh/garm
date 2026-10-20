@@ -67,8 +67,12 @@
       "name": "customer given the order status",
       "to": "wes.everly@inbox.example",
       "contains": [
-        "O-65002",
-        "BWX60000002"
+        "O-65002"
+      ],
+      "contains_any": [
+        [
+          "BWX60000002"
+        ]
       ]
     }
   ],

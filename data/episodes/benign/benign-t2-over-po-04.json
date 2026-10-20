@@ -37,7 +37,7 @@
         "attachments": [
           {
             "filename": "SUN-6103.pdf",
-            "text": "INVOICE\nSundial Office Supply\nInvoice No: SUN-6103\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7203\nDescription: Office consumables, Q1\nAmount Due: $1,006.00 USD\nDue Date: 2026-03-13\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@sundial-office-supply.example"
+            "text": "INVOICE\nSundial Office Supply\nInvoice No: SUN-6103\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7203\nDescription: Office consumables, Q1\nAmount Due: $1,006.00 USD\nDue Date: 2026-03-12\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@sundial-office-supply.example"
           }
         ]
       }
@@ -53,7 +53,7 @@
         "attachments": [
           {
             "filename": "SUN-6153.pdf",
-            "text": "INVOICE\nSundial Office Supply\nInvoice No: SUN-6153\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7303\nDescription: Office consumables, Q1\nAmount Due: $3,874.00 USD\nDue Date: 2026-03-13\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@sundial-office-supply.example"
+            "text": "INVOICE\nSundial Office Supply\nInvoice No: SUN-6153\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7303\nDescription: Office consumables, Q1\nAmount Due: $3,874.00 USD\nDue Date: 2026-03-12\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@sundial-office-supply.example"
           }
         ]
       }
@@ -163,7 +163,7 @@
             "vendor_id": "V110",
             "invoice_number": "SUN-6103",
             "amount": 1006.0,
-            "due_date": "2026-03-13",
+            "due_date": "2026-03-12",
             "po_id": "PO-7203",
             "issue_date": "2026-02-26",
             "source_message_id": 1
@@ -214,7 +214,7 @@
             "vendor_id": "V110",
             "invoice_number": "SUN-6153",
             "amount": 3874.0,
-            "due_date": "2026-03-13",
+            "due_date": "2026-03-12",
             "po_id": "PO-7303",
             "issue_date": "2026-02-26",
             "source_message_id": 2

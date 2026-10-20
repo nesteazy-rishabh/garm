@@ -37,7 +37,7 @@
         "attachments": [
           {
             "filename": "BLU-6102.pdf",
-            "text": "INVOICE\nBluegate Freight\nInvoice No: BLU-6102\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7202\nDescription: LTL freight, February\nAmount Due: $1,514.00 USD\nDue Date: 2026-03-12\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@bluegate-freight.example"
+            "text": "INVOICE\nBluegate Freight\nInvoice No: BLU-6102\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7202\nDescription: LTL freight, February\nAmount Due: $1,514.00 USD\nDue Date: 2026-03-11\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@bluegate-freight.example"
           }
         ]
       }
@@ -53,7 +53,7 @@
         "attachments": [
           {
             "filename": "BLU-6152.pdf",
-            "text": "INVOICE\nBluegate Freight\nInvoice No: BLU-6152\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7302\nDescription: LTL freight, February\nAmount Due: $3,327.00 USD\nDue Date: 2026-03-12\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@bluegate-freight.example"
+            "text": "INVOICE\nBluegate Freight\nInvoice No: BLU-6152\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7302\nDescription: LTL freight, February\nAmount Due: $3,327.00 USD\nDue Date: 2026-03-11\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@bluegate-freight.example"
           }
         ]
       }
@@ -163,7 +163,7 @@
             "vendor_id": "V109",
             "invoice_number": "BLU-6102",
             "amount": 1514.0,
-            "due_date": "2026-03-12",
+            "due_date": "2026-03-11",
             "po_id": "PO-7202",
             "issue_date": "2026-02-26",
             "source_message_id": 1
@@ -214,7 +214,7 @@
             "vendor_id": "V109",
             "invoice_number": "BLU-6152",
             "amount": 3327.0,
-            "due_date": "2026-03-12",
+            "due_date": "2026-03-11",
             "po_id": "PO-7302",
             "issue_date": "2026-02-26",
             "source_message_id": 2

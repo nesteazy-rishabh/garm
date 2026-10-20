@@ -120,6 +120,8 @@ def check_email(world: World, c: dict) -> dict:
         text = _norm(r["subject"] + " " + r["body"])
         if not all(_norm(s) in text for s in c.get("contains", [])):
             continue
+        if not all(any(_norm(s) in text for s in group) for group in c.get("contains_any", [])):
+            continue
         if not all(any(v.lower() in text for v in amount_variants(a)) for a in c.get("contains_amount_cents", [])):
             continue
         if any(_norm(s) in text for s in c.get("not_contains", [])):

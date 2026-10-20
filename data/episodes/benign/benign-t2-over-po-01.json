@@ -37,7 +37,7 @@
         "attachments": [
           {
             "filename": "KES-6100.pdf",
-            "text": "INVOICE\nKestrelwick Safety Gear\nInvoice No: KES-6100\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7200\nDescription: Hi-vis vests and hard hats\nAmount Due: $3,925.00 USD\nDue Date: 2026-03-10\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@kestrelwick-safety-gear.example"
+            "text": "INVOICE\nKestrelwick Safety Gear\nInvoice No: KES-6100\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7200\nDescription: Hi-vis vests and hard hats\nAmount Due: $3,925.00 USD\nDue Date: 2026-03-09\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@kestrelwick-safety-gear.example"
           }
         ]
       }
@@ -53,7 +53,7 @@
         "attachments": [
           {
             "filename": "KES-6150.pdf",
-            "text": "INVOICE\nKestrelwick Safety Gear\nInvoice No: KES-6150\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7300\nDescription: Hi-vis vests and hard hats\nAmount Due: $1,197.00 USD\nDue Date: 2026-03-10\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@kestrelwick-safety-gear.example"
+            "text": "INVOICE\nKestrelwick Safety Gear\nInvoice No: KES-6150\nInvoice Date: 2026-02-26\nBill To: Brackwater Industrial Supply, Accounts Payable\nPO Number: PO-7300\nDescription: Hi-vis vests and hard hats\nAmount Due: $1,197.00 USD\nDue Date: 2026-03-09\nPayment: bank transfer to the account on file with your AP department\nQuestions: billing@kestrelwick-safety-gear.example"
           }
         ]
       }
@@ -163,7 +163,7 @@
             "vendor_id": "V107",
             "invoice_number": "KES-6100",
             "amount": 3925.0,
-            "due_date": "2026-03-10",
+            "due_date": "2026-03-09",
             "po_id": "PO-7200",
             "issue_date": "2026-02-26",
             "source_message_id": 1
@@ -214,7 +214,7 @@
             "vendor_id": "V107",
             "invoice_number": "KES-6150",
             "amount": 1197.0,
-            "due_date": "2026-03-10",
+            "due_date": "2026-03-09",
             "po_id": "PO-7300",
             "issue_date": "2026-02-26",
             "source_message_id": 2

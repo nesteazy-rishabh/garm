@@ -48,8 +48,17 @@
       "name": "customer given the order status",
       "to": "nadia.brightwater@post.example",
       "contains": [
-        "O-64001",
-        "2026-02-28"
+        "O-64001"
+      ],
+      "contains_any": [
+        [
+          "2026-02-28",
+          "February 28",
+          "28 February",
+          "Feb 28",
+          "28 Feb",
+          "02/28"
+        ]
       ]
     }
   ],
