@@ -1,0 +1,9 @@
+defence,callback,laundered_success_rubber_stamp_93,laundered_activation_approve_all,approvals_per_100_legitimate_updates,legitimate_update_pass
+D0,on file,0.9583,0.9583,0.0,0.9167
+D0,known good,0.0,0.0,0.0,0.9167
+D2,on file,0.8289,0.9583,320.8,0.9583
+D2,known good,0.0,0.0,325.0,0.9583
+D4,on file,0.8037,0.9167,247.9,0.9792
+D4,known good,0.0,0.0,247.9,0.9792
+D5,on file,0.8289,0.9583,100.0,0.9792
+D5,known good,0.0,0.0,50.0,1.0

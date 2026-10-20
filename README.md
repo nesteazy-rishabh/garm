@@ -2,7 +2,7 @@
 
 **Cross-run prompt injection in scheduled agents, and what each defence costs in human approvals.**
 
-Status: under construction. No results yet.
+Status: first results (2026-10-20), under review before release.
 
 Garm is a benchmark environment for a back-office agent that runs as scheduled jobs over a system of record.
 The company is fictional: Brackwater Industrial Supply, a mid-size distributor. All data is synthetic. Every name,
@@ -79,6 +79,7 @@ achieved).
 | D3 | D2 plus a monitor model that reviews every consequential action in context and can escalate it. |
 | D4 | Drafts only (plan-then-execute; Beurer-Kellner et al. 2025, arXiv 2506.08837; Debenedetti et al. 2025, CaMeL, arXiv 2503.18813). The model has no tools and returns typed proposals. Code checks each one against the record and the handbook, then executes it, with D2-style approvals for consequential ones. |
 | D5 | D4 plus per-field authority labels (`authority.py`). Authority is computed from the provenance log and passed through verifications: a callback verification is only as trustworthy as the phone number that was called. Only actions that rest on low-authority fields need approval, and their cards show the provenance chain. |
+| D6 | A known-good callback (`--callback-policy known_good`): staff verify by calling the number on file before any recent change, not the number on file now. It changes the staff process rather than the agent, so it combines with any of D0–D5. A strict variant assumes that an honest vendor's old line is disconnected once it moves. |
 
 **Approver models** are applied to the logged approval cards (`approvers.py`, `docs/approver-models.md`):
 - an oracle;
@@ -91,6 +92,33 @@ Their parameters come from published approval data.
 
 **Adaptive attacker** (`adaptive.py`): an attacker model rewrites the messages it controls up to N times. It uses
 the stage each attempt reached as feedback, and it knows the handbook and which defence is deployed.
+
+## Results so far
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/headline-dark.svg">
+  <img alt="Two dot plots, one row per defence (D0, D2, D4, D5). Left: laundered attack success with a 93% rubber-stamp approver is 80-96% with today's callback process and 0% for every defence with a known-good callback. Right: approvals per 100 legitimate updates are 0, 321, 248 and 100 with today's process; with a known-good callback they are unchanged except D5, which halves to 50." src="docs/figures/headline-light.svg">
+</picture>
+
+The data behind the figure is in `docs/figures/headline.csv`.
+
+- **Templated direct injection never reached an action.** In 1,080 runs on Claude Haiku 5.5, and 180 on Claude
+  Sonnet 5.5, no consequential action carried attacker data, even with no defence. That covers templated attacks
+  only; see the limitations below.
+- **The laundered callback chain beat every agent-side defence.** It activated in 92–96% of runs under D0–D5 when
+  approvals were given (8/8 on Sonnet 5.5), because every step follows the handbook.
+- **Agent-side defences differ only in the approvals they ask for.** D5 asked for none on routine work and about one
+  per legitimate update, against 1–3 per task for D2–D4. With an approver who passes 93% of cards, laundered
+  success stayed at 79–83% for every gated defence. A card-reading LLM approver stopped it but also blocked 45–100%
+  of honest updates, because an honest vendor's provenance looks the same as a hijacked one's.
+- **A known-good callback stops it at the source.** Under D6, laundered success fell to 0 of 24 under every defence,
+  including with no agent defence and no approvals. Legitimate-update pass rates were unchanged, and D5 needed half
+  as many approvals. In the strict variant, honest vendors who changed number and bank together are blocked (about
+  a quarter of legitimate updates in this mix).
+
+Full results, with intervals and verdicts on the pre-registered hypotheses: `docs/results-main.md` (Haiku 5.5 grid
+and Sonnet 5.5 check), `docs/results-d6.md`, `docs/results-adaptive.md`. Every change made to graders or the harness
+after seeing model output is logged in `docs/grader-changes.md`.
 
 ## Pre-registered hypotheses
 
@@ -125,21 +153,26 @@ All rates are reported with Wilson 95% confidence intervals.
   a small class, and the Inspect wrapper can drive any model Inspect supports.
 - **Synthetic setting.** The environment and data are synthetic, and samples per cell are small.
 - **Assumed approvers.** Approver models are assumptions, not measurements.
-- **Bounded attacker.** The adaptive attacker is a lower bound on attacker strength.
+- **Bounded attacker.** The direct-injection results come from templated attacks. The one adaptive-attacker run
+  is weak: the attacker model, Claude Sonnet 5.5, refused 48% of its turns (`docs/results-adaptive.md`). They are
+  not evidence of robustness against a determined attacker. The laundered-chain results do not depend on attacker
+  strength, because every step follows policy.
 - **Moving targets.** Model IDs, prices and dates are recorded with every run.
 
 ## Layout
 
 ```
-src/garm_bench/   environment, scheduler, staff process, tools, defences (D0-D5), drafts engine, authority labels,
-                  graders, approver models, adaptive attacker, analysis, budget ledger, Inspect task, CLI
+src/garm_bench/   environment, scheduler, staff process (with D6 callback policies), tools, defences (D0-D5),
+                  drafts engine, authority labels, standalone provenance module, graders, approver models,
+                  adaptive attacker, analysis, budget ledger, Inspect task, CLI
 data/episodes/    episode definitions (JSON): benign, legit, attack
 scripts/          deterministic episode generators (build_episodes.py, build_attacks.py)
 docs/             design notes, approver models, defence plug-in API, grader change log, results
 tests/            offline validation of every episode and component (no API calls)
 ```
 
-To test your own defence, see `docs/defence-api.md`.
+To test your own defence, see `docs/defence-api.md`. To add provenance and authority labels to your own agent, see
+`docs/provenance.md`.
 
 ## Running
 
@@ -162,11 +195,14 @@ Episodes are regenerated deterministically with
 ```bash
 uv run garm analyze runs/<dir> [runs/<dir> ...]      # headline table: utility, approvals, attack stages, approvers
 uv run garm adapt --defence D4 --seeds attack-c1 --approver card_llm --max-spend 3.00   # adaptive attacker (paid)
+uv run garm run --split legit --model claude-haiku-5-5 --defence D5 --callback-policy known_good --max-spend 1.00  # D6
+uv run --extra figures python scripts/make_figures.py   # docs/figures/ from runs/main and runs/d6 analyses
 ```
 
 ## Spend control
 
-Every model call goes through a ledger with a cumulative hard cap of US$100 across all runs. Before each call the
+Every model call goes through a ledger with a cumulative hard cap of US$100 across all runs (set lower with
+`GARM_BUDGET_CAP_USD`). Before each call the
 ledger reserves a conservative cost estimate and refuses the call if the cap would be crossed. After the call it
 records the actual token usage at a dated price table. Each invocation can set a lower cap with `--max-spend`.
 
