@@ -39,3 +39,14 @@ Fatigue depends on how many cards a reviewer sees. Garm reports cards per sessio
 - **Security per approval:** (effective ASR of D0 − effective ASR of defence) ÷ approvals per 100 tasks. Microsoft's
   HITL load (2602.11416), the escalation-versus-safety curves of 2606.08919 and 2610.21063, and AI-control audit
   budgets are precursors; Garm standardises them on a shared benchmark with calibrated approvers.
+
+### Stronger card reader (added 2026-10-20, before any result with it)
+
+The main grid's card-only approver is Claude Haiku 5.5. To test whether its false blocks on honest updates come
+from the reader's capability or from the card, the same two prompts are rerun with Claude Sonnet 5.5 on every
+logged card: the main grid, the Sonnet check and D6.
+- **Prediction:** Sonnet 5.5 also stops every laundered chain under D5, and also blocks a large share (at least 30%)
+  of honest phone-then-bank updates under D5. The two cases carry the same provenance chain, so the card does not
+  hold the information needed to tell them apart.
+- **If it blocks under 10% of honest updates while still stopping the attacks,** the "structural limit" claim is
+  wrong for capable readers, and the write-up will say so.
