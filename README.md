@@ -129,10 +129,11 @@ Counts are given by episode where attempts repeat, because the attempts of one e
 - **What those approvals buy depends on the approver.** *Modelled:* with an assumed approver who passes 93% of
   cards, laundered success stays at 79–83% under every gated defence. That figure is arithmetic on the assumed rate
   applied to the logged cards, not a measurement of people. *Measured:* card-only LLM approvers (Haiku 5.5 or Sonnet
-  5.5 reading only the card) stopped every laundered chain but blocked 45–100% of honest updates. Under D5 they
-  blocked the honest phone-then-bank twin in 12 of 12 runs for three of the four reader-and-prompt pairs (9 of 12 for
-  the fourth), because its provenance chain is the same as the attack's. That result rests on 4 episodes and 8
-  distinct cards, each judged once per reader and prompt.
+  5.5 reading only the card) stopped most laundered chains but blocked 45–100% of honest updates. With every card
+  judged 5 times, under D5 they blocked an expected 94–100% of honest phone-then-bank twin runs and 97–100% of
+  laundered runs, depending on reader and prompt: the twin's provenance chain is the same as the attack's. Resampling
+  also showed that card readers let some laundered chains through (up to 3% of runs under D5 and up to 13% under D4).
+  The twin result rests on 4 episodes and 8 distinct cards.
 - **A known-good callback removes the chain, given its assumption.** If the number on file before a recent change
   still reaches the real vendor, the callback reaches the vendor, who denies the change. That follows from the staff
   process model, so the result is again by construction. Measured: 0 of 8 family-X episodes activated in any
