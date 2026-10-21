@@ -98,7 +98,8 @@ details are in `docs/related-work.md`.
 
 - **A strong attacker.** The direct attacks are templated. The one adaptive-attacker run was weak, because the
   attacker model (Sonnet 5.5) refused 48% of its turns. Nothing here is evidence of robustness against a determined
-  attacker.
+  attacker. What a stronger attacker would take to build, and why the obvious tools don't drop in, is in
+  `docs/attacker-roadmap.md`.
 - **Real people.** Human approvers are modelled from published approval rates. Only the LLM card readers were
   measured, and no human study has been run on these cards.
 - **What happens after a "no".** Approvals are applied after the fact to cards logged in approve-all runs, so a
