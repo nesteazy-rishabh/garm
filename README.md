@@ -2,7 +2,7 @@
 
 **Cross-run prompt injection in scheduled agents, and what each defence costs in human approvals.**
 
-Status: first results (2026-10-20); independent review on 2026-10-21, with its fixes applied.
+Status: released 2026-10-21 (v0.1.0). First results 2026-10-20; independent review 2026-10-21, with its fixes applied.
 
 Garm is a benchmark environment for a back-office agent that runs as scheduled jobs over a system of record.
 The company is fictional: Brackwater Industrial Supply, a mid-size distributor. All data is synthetic. Every name,
@@ -241,7 +241,7 @@ uv run --extra figures python scripts/make_figures.py   # docs/figures/ from run
 ## Data
 
 The run data behind every reported number (configs, graded results, card-reader decisions and analysis files, 1.7
-MB) is published as a release archive, built with `uv run python scripts/package_runs.py`. Unpack it at the
+MB) is published as the release archive `garm-runs-2026-10-21.tar.gz` (GitHub release v0.1.0), built with `uv run python scripts/package_runs.py`. Unpack it at the
 repository root and the commands in `docs/results-main.md` and `docs/results-d6.md` reproduce the tables. Transcripts
 and final databases (about 700 MB) are not included. Adaptive-attacker runs are withheld (`docs/dataset-card.md`).
 
