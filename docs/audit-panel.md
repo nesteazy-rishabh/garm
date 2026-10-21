@@ -1,11 +1,12 @@
 # A cross-vendor audit panel
 
 Garm was built with Claude's help and first audited by two Claude models (`scripts/audit_models.py`). That is a
-problem on its own terms. A reviewer from the same family as the author shares the author's blind spots, and there is
-measured evidence that it also flatters the work: LLM judges rate text from their own family higher than a neutral
-grader would (Panickssery, Bowman, Feng, *LLM Evaluators Recognize and Favor Their Own Generations*, NeurIPS 2024;
-the self-enhancement effect in Zheng et al., *Judging LLM-as-a-Judge*, 2023). So the two Claude audits can tell me
-the arithmetic checks out, but I should not trust them on whether the work is any good.
+problem on its own terms. A reviewer from the same family as the author can share the author's blind spots, and there
+is evidence that it can also flatter the work: LLM judges have been shown to favour text from their own family in some
+settings (Panickssery, Bowman, Feng, *LLM Evaluators Recognize and Favor Their Own Generations*, NeurIPS 2024; the
+self-enhancement effect in Zheng et al., *Judging LLM-as-a-Judge*, 2023). How strong that effect is across vendors is
+not settled, which is one more reason to read with a panel rather than a single model. So the two Claude audits can
+tell me the arithmetic checks out, but I have less reason to trust them on whether the work is any good.
 
 This is the same reason a developer does not sign off on their own code before it ships, and the reason a company
 that has been breached hires an outside firm to investigate rather than writing its own report. The point is not that
