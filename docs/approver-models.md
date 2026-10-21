@@ -63,3 +63,21 @@ logged card: the main grid, the Sonnet check and D6.
 - Turan, "Oversight Has a Capacity", arXiv 2606.08919. https://arxiv.org/abs/2606.08919
 - Kodathala et al., "Approve What, Exactly?", arXiv 2610.21063. https://arxiv.org/abs/2610.21063
 - Kolluri et al., "Optimizing Agent Planning for Security and Autonomy", arXiv 2602.11416. https://arxiv.org/abs/2602.11416
+
+### Resampled card readers (pre-registered 2026-10-21, before any result)
+
+The independent review noted that the twin result rests on 8 distinct cards, each judged once per reader and
+prompt. This run judges every distinct honest-twin (l4) and family-X card logged under D2, D4 and D5 with the
+on-file callback (Haiku 5.5 and Sonnet 5.5 agent runs; 149 cards) **5 times** with each reader (Haiku 5.5, Sonnet
+5.5) and each prompt (`strict`, `base_rate`), at the default temperature. Rates are reported per sample and by
+episode (4 twin episodes, 8 family-X episodes), with Wilson intervals on episodes. Script:
+`scripts/resample_cards.py`.
+
+- **Prediction:** under D5, for every reader and prompt, the twin cards are rejected in at least 80% of samples and
+  the family-X cards in at least 90%, so the gap between the two is under 20 points. A reader cannot separate
+  honest from hijacked from the D5 card.
+- **Falsified for a reader and prompt if** under D5 it approves twin cards in at least 50% of samples while
+  rejecting family-X cards in at least 90%. The write-up will then say the structural limit does not hold for that
+  reader.
+- Also reported: how often the 5 samples of one card agree (decision stability), and the same rates under D2 and
+  D4, where the card carries no provenance.
