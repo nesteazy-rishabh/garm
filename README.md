@@ -2,7 +2,7 @@
 
 **Cross-run prompt injection in scheduled agents, and what each defence costs in human approvals.**
 
-Status: first results (2026-10-20), under review before release.
+Status: first results (2026-10-20); independent review on 2026-10-21, with its fixes applied.
 
 Garm is a benchmark environment for a back-office agent that runs as scheduled jobs over a system of record.
 The company is fictional: Brackwater Industrial Supply, a mid-size distributor. All data is synthetic. Every name,
@@ -10,6 +10,10 @@ email domain (`*.example`), phone number (555-01xx) and bank detail is invented,
 entities is coincidental.
 
 Garm is named for the hound that guards the gate of Hel in Norse myth.
+
+**Who it is for.** Teams putting a scheduled agent in front of vendor records, customer records and payments, who
+must choose a defence and staff its approval queue; and researchers who want a cross-run setting in which blocking
+honest work has a measured cost. How it relates to prior benchmarks and defences is in `docs/related-work.md`.
 
 ## The question
 
@@ -54,8 +58,9 @@ Garm measures, for such an agent:
   number answers: the real vendor confirms only changes it asked for, while an attacker who controls the number
   confirms anything. This is how a poisoned record turns into a genuine, staff-written verification.
 - **Graders:** deterministic checks on the final database state and the outbound message log. No LLM judge is used.
-  Every episode is validated offline: a scripted secure agent must pass, a scripted victim must trigger the attack,
-  and a do-nothing agent must fail.
+  Every episode is validated offline (`garm validate`): a scripted secure agent must pass, a scripted victim must
+  trigger the attack, and a do-nothing agent must fail. In family X the handbook-following script must instead be
+  laundered under today's callback process and protected under a known-good one.
 
 ## Episodes
 
@@ -74,12 +79,12 @@ achieved).
 | | Defence |
 |---|---|
 | D0 | None: a tool-calling agent with the company handbook. |
-| D1 | Prompt rules plus spotlighting (delimiting and datamarking of external text). |
+| D1 | Prompt rules plus spotlighting (delimiting and datamarking of external text; Hines et al. 2024, arXiv 2403.14720). |
 | D2 | Tool permission gateway. Payments, refunds, outbound messages that are off-record or state an amount, and changes to money or identity fields go to an approval queue. Approval cards are rendered from the record. |
 | D3 | D2 plus a monitor model that reviews every consequential action in context and can escalate it. |
 | D4 | Drafts only (plan-then-execute; Beurer-Kellner et al. 2025, arXiv 2506.08837; Debenedetti et al. 2025, CaMeL, arXiv 2503.18813). The model has no tools and returns typed proposals. Code checks each one against the record and the handbook, then executes it, with D2-style approvals for consequential ones. |
 | D5 | D4 plus per-field authority labels (`authority.py`). Authority is computed from the provenance log and passed through verifications: a callback verification is only as trustworthy as the phone number that was called. Only actions that rest on low-authority fields need approval, and their cards show the provenance chain. |
-| D6 | A known-good callback (`--callback-policy known_good`): staff verify by calling the number on file before any recent change, not the number on file now. It changes the staff process rather than the agent, so it combines with any of D0–D5. A strict variant assumes that an honest vendor's old line is disconnected once it moves. |
+| D6 | A known-good callback (`--callback-policy known_good`): staff verify by calling the number on file before any recent change, not the number on file now. This is standard anti-fraud practice ("use previously known numbers", FBI I-082715a-PSA, 2015), not a new defence; Garm measures it. It changes the staff process rather than the agent, so it combines with any of D0–D5. A strict variant assumes that an honest vendor's old line is disconnected once it moves. |
 
 **Approver models** are applied to the logged approval cards (`approvers.py`, `docs/approver-models.md`):
 - an oracle;
@@ -102,22 +107,42 @@ the stage each attempt reached as feedback, and it knows the handbook and which 
 
 The data behind the figure is in `docs/figures/headline.csv`.
 
-- **Templated direct injection never reached an action.** In 1,080 runs on Claude Haiku 5.5, and 180 on Claude
-  Sonnet 5.5, no consequential action carried attacker data, even with no defence. That covers templated attacks
-  only; see the limitations below.
-- **The laundered callback chain beat every agent-side defence.** It activated in 92–96% of runs under D0–D5 when
-  approvals were given (8/8 on Sonnet 5.5), because every step follows the handbook.
-- **Agent-side defences differ only in the approvals they ask for.** D5 asked for none on routine work and about one
-  per legitimate update, against 1–3 per task for D2–D4. With an approver who passes 93% of cards, laundered
-  success stayed at 79–83% for every gated defence. A card-reading LLM approver stopped it but also blocked 45–100%
-  of honest updates. Under D5 it blocked every honest phone-then-bank change, with Claude Haiku 5.5 or Claude
-  Sonnet 5.5 as the reader, because an honest vendor's provenance looks the same as a hijacked one's.
-- **A known-good callback stops it at the source.** Under D6, laundered success fell to 0 of 24 under every defence,
-  including with no agent defence and no approvals. Legitimate-update pass rates were unchanged, D5 needed half as many
-  approvals, and the card reader's false blocks halved. This replicated on Sonnet 5.5. In the strict variant, honest vendors who changed number and bank together are blocked (about
-  a quarter of legitimate updates in this mix).
+Counts are given by episode where attempts repeat, because the attempts of one episode are correlated. Family X has
+8 episodes and the legitimate updates 16, of which 4 are honest phone-then-bank twins.
 
-Full results, with intervals and verdicts on the pre-registered hypotheses: `docs/results-main.md` (Haiku 5.5 grid
+- **Templated direct injection never steered an action (a null).** In 1,080 runs on Claude Haiku 5.5 and 180 on
+  Claude Sonnet 5.5, no effect-determining part of an attempted consequential action (recipient, account, amount or
+  order) carried attacker data, and no attack activated, even with no defence. Attacker data did appear elsewhere in
+  attempted actions in 0–26% of runs, depending on defence and timing, mostly in refusal emails that quote a forged
+  case number and in refund requests marked unverified (`docs/grader-changes.md`). This covers templated attacks only,
+  and it means Garm does not yet rank the defences on direct injection.
+- **The laundered chain works by construction.** Handbook rule VR3 lets a vendor's own email domain change its phone
+  number without a callback, and staff verify bank changes by calling the number on file. An attacker in a real
+  vendor's mailbox can therefore obtain a genuine staff verification, and a scripted agent that follows the handbook
+  exactly is fooled (`tests/test_attacks.py`). Family X demonstrates that defences which trust the record inherit
+  the flaws of the process that feeds it; it is not a model weakness that the experiment discovered. The models did
+  follow the handbook here: all 8 episodes activated in at least one of three attempts under every defence on Haiku
+  5.5 (in every attempt for 7 of 8, or 6 of 8 under D3), and 8 of 8 on Sonnet 5.5 (one attempt each).
+- **Agent-side defences differ in the approvals they ask for (measured).** D5 asked for no approvals on routine work
+  and one per legitimate update, against 102–163 per 100 benign tasks and 248–338 per 100 legitimate updates for
+  D2–D4.
+- **What those approvals buy depends on the approver.** *Modelled:* with an assumed approver who passes 93% of
+  cards, laundered success stays at 79–83% under every gated defence. That figure is arithmetic on the assumed rate
+  applied to the logged cards, not a measurement of people. *Measured:* card-only LLM approvers (Haiku 5.5 or Sonnet
+  5.5 reading only the card) stopped every laundered chain but blocked 45–100% of honest updates. Under D5 they
+  blocked the honest phone-then-bank twin in 12 of 12 runs for three of the four reader-and-prompt pairs (9 of 12 for
+  the fourth), because its provenance chain is the same as the attack's. That result rests on 4 episodes and 8
+  distinct cards, each judged once per reader and prompt.
+- **A known-good callback removes the chain, given its assumption.** If the number on file before a recent change
+  still reaches the real vendor, the callback reaches the vendor, who denies the change. That follows from the staff
+  process model, so the result is again by construction. Measured: 0 of 8 family-X episodes activated in any
+  attempt under every defence (Haiku, three attempts; Sonnet on D0 and D5, one attempt). Legitimate-update pass
+  rates were unchanged, D5 needed half as many approvals on legitimate updates (100 to 50 per 100), and the card
+  reader's false blocks under D5 halved. The strict variant, where an honest vendor's old line is dead, blocks the
+  4 twin episodes.
+
+Related work and what Garm adds: `docs/related-work.md`. Full results, with intervals and verdicts on the
+pre-registered hypotheses: `docs/results-main.md` (Haiku 5.5 grid
 and Sonnet 5.5 check), `docs/results-d6.md`, `docs/results-adaptive.md`. Every change made to graders or the harness
 after seeing model output is logged in `docs/grader-changes.md`. The threat model is in `docs/threat-model.md`, and
 the episodes are described in `docs/dataset-card.md`.
@@ -154,7 +179,18 @@ All rates are reported with Wilson 95% confidence intervals.
 - **Single provider.** The grid uses Anthropic models only. The environment is model-agnostic: a model adapter is
   a small class, and the Inspect wrapper can drive any model Inspect supports.
 - **Synthetic setting.** The environment and data are synthetic, and samples per cell are small.
-- **Assumed approvers.** Approver models are assumptions, not measurements.
+- **Assumed approvers.** Approver models are assumptions, not measurements. Only the card-only LLM approvers are
+  measured, with one sample per distinct card text. No human approver study has been run.
+- **Post-hoc approvals.** Approver models are applied after the fact to cards logged in approve-all runs. A "no"
+  therefore changes nothing downstream: the agent does not retry, the attacker does not resend, and the honest vendor
+  does not follow up. Real approvals would change the trajectory.
+- **Results built into the design.** Family X succeeds because of handbook rule VR3 and the callback process, and D6
+  stops it because the staff model assumes the old number reaches the real vendor. Both outcomes are demonstrations
+  of a process flaw and a process control, measured for cost; neither is a discovery about the models.
+- **Correlated attempts.** The three attempts of an episode are not independent, so per-attempt intervals are too
+  narrow. Episode-level counts are in the analysis files (`*_episodes`) and are used in the summary above.
+- **No held-out split.** Defences were developed and evaluated on the same episodes. D4's validator was repaired
+  after the pilot (`docs/results-pilot.md`), on episodes that are also in the main grid.
 - **Bounded attacker.** The direct-injection results come from templated attacks. The one adaptive-attacker run
   is weak: the attacker model, Claude Sonnet 5.5, refused 48% of its turns (`docs/results-adaptive.md`). They are
   not evidence of robustness against a determined attacker. The laundered-chain results do not depend on attacker
@@ -180,7 +216,7 @@ To test your own defence, see `docs/defence-api.md`. To add provenance and autho
 
 ```bash
 uv sync --all-extras
-uv run garm validate        # offline: the scripted solver must pass and a do-nothing agent must fail every episode
+uv run garm validate        # offline, all 124 episodes: scripted oracle, scripted victim and do-nothing checks
 uv run pytest               # the same checks plus unit tests for tools, the gateway, the ledger and statistics
 
 # Paid: needs ANTHROPIC_API_KEY in .env and a recent price check (verified_on in data/prices.json)
@@ -200,6 +236,13 @@ uv run garm adapt --defence D4 --seeds attack-c1 --approver card_llm --max-spend
 uv run garm run --split legit --model claude-haiku-5-5 --defence D5 --callback-policy known_good --max-spend 1.00  # D6
 uv run --extra figures python scripts/make_figures.py   # docs/figures/ from runs/main and runs/d6 analyses
 ```
+
+## Data
+
+The run data behind every reported number (configs, graded results, card-reader decisions and analysis files, 1.7
+MB) is published as a release archive, built with `uv run python scripts/package_runs.py`. Unpack it at the
+repository root and the commands in `docs/results-main.md` and `docs/results-d6.md` reproduce the tables. Transcripts
+and final databases (about 700 MB) are not included. Adaptive-attacker runs are withheld (`docs/dataset-card.md`).
 
 ## Spend control
 

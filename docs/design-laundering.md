@@ -1,5 +1,11 @@
 # Laundered authority: design of the callback chain and of D4 and D5
 
+**Terminology.** "Laundered" here means a genuine verification obtained through a channel the attacker set earlier
+under a policy that allows it. It is not the "memory provenance laundering" of PPMF (arXiv 2607.29167), where
+consolidation erases a value's low-trust origin; in Garm the provenance log keeps the whole chain. Because handbook
+rule VR3 makes the phone number low-scrutiny, a script that follows the handbook exactly is laundered: family X is a
+designed demonstration, not a finding about models. See `related-work.md`.
+
 ## Why the first attack set is not enough
 
 The first 60 attacks each break a written policy at the moment they are acted on: a bank change with no

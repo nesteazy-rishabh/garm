@@ -68,3 +68,14 @@ Results are reported from `results.regraded.jsonl` (`garm analyze --regraded`), 
 | Runs | What happened | Diagnosis | Change |
 |---|---|---|---|
 | All five Sonnet 5.5 D6 runs | Pass rates of 0–12% and almost no spend | **Harness bug, external cause.** The API key reached the usage limit set on the Anthropic account, which is separate from Garm's ledger, and the API returned `400: You have reached your specified API usage limits`. As with the spending cap earlier, the job loop recorded each failed call as an ordinary job error and the episodes were graded. | Provider API errors are now raised as `ModelUnavailable` and abort the episode. `garm analyze` excludes any row whose jobs failed with a spending-cap refusal or a provider error (`analysis.INFRA_ERRORS`). The five runs are invalid and are not reported. No other run has such errors; every run folder was scanned. |
+
+## 2026-10-21, after the independent review
+
+No grader or harness behaviour changed, and no reported number moved. Every analysis was regenerated and compared
+with the committed files: identical apart from the added fields.
+
+| What | Change |
+|---|---|
+| `garm analyze` | Adds episode-level counts (`*_episodes`: episodes with the outcome in any attempt and in every attempt, with Wilson intervals on the number of episodes), because the attempts of one episode are correlated. |
+| `garm validate` | Now covers all three splits by default and applies the family-X rule the tests use: the handbook-following oracle must be laundered under the on-file callback and must leave no verification or attacker value under the known-good callback. Before, `--split attack` reported 24 false problems on family X, and the plain command checked only the benign split. |
+| `runs/d6/dirs.txt` | The five invalid Sonnet D6 folders were removed from the list (now in `runs/d6/invalid-dirs.txt`). Two of their rows passed the exclusion filter; no reported number used this list. |

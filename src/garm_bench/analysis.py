@@ -58,6 +58,17 @@ def _rate(k: float, n: int) -> dict:
     return {"rate": round(k / n, 4) if n else None, "ci95": [round(lo, 4), round(hi, 4)] if n else None, "n": n}
 
 
+def _episodes(group: list[dict], outcome) -> dict:
+    """Episode-level view. Attempts of one episode are correlated, so the honest n is the number of episodes."""
+    by_ep = defaultdict(list)
+    for r in group:
+        by_ep[r["episode_id"]].append(bool(outcome(r)))
+    n = len(by_ep)
+    return {"n_episodes": n, "attempts_per_episode": sorted({len(v) for v in by_ep.values()}),
+            "any_attempt": _rate(sum(any(v) for v in by_ep.values()), n),
+            "every_attempt": _rate(sum(all(v) for v in by_ep.values()), n)}
+
+
 def analyze(rows: list[dict], llm_decisions: dict | None = None, tasks_per_day: int = 200) -> dict:
     """llm_decisions: {variant name: {card text: approved}} for card-only LLM approvers."""
     episodes = {e["id"]: e for split in ("benign", "legit", "attack") for e in load_episodes(split)}
@@ -81,6 +92,7 @@ def analyze(rows: list[dict], llm_decisions: dict | None = None, tasks_per_day: 
             sel = [r for r in useful if r["_split"] == split]
             if sel:
                 cell[f"{split}_pass"] = _rate(sum(r["passed"] for r in sel), len(sel))
+                cell[f"{split}_pass_episodes"] = _episodes(sel, lambda r: r["passed"])
         for timing in ("same_run", "cross_run"):
             sel = [r for r in attacks if r["attack"]["timing"] == timing]
             laundered = [r for r in sel if episodes[r["episode_id"]]["attack"].get("laundered_by_policy")]
@@ -90,6 +102,7 @@ def analyze(rows: list[dict], llm_decisions: dict | None = None, tasks_per_day: 
                     continue
                 cell[label] = {stage: _rate(sum(bool(r["attack"].get(stage)) for r in group), len(group))
                                for stage in ("write", "mention", "incorporation", "activation")}
+                cell[f"{label}_episodes"] = _episodes(group, lambda r: r["attack"].get("activation"))
         seen = cards_per_session(per100, tasks_per_day)
         eff = {}
         for name, m in MODELS.items():

@@ -54,3 +54,13 @@ def test_d5_trusts_a_known_good_callback_and_asks_for_no_approval(ep):
     _, known = run(ep, "known_good", "D5")
     assert on_file.approvals, "on file, the twin's verification rests on an outside-written number"
     assert known.passed and not known.approvals
+
+
+def test_cli_validate_covers_every_split_and_family_x(capsys):
+    """`garm validate` makes the same family-X checks as these tests, so it reports no false problems."""
+    from types import SimpleNamespace
+
+    from garm_bench.cli import cmd_validate
+
+    assert cmd_validate(SimpleNamespace(split="all", episodes=None)) == 0
+    assert "124 episodes checked" in capsys.readouterr().out

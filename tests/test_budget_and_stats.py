@@ -134,3 +134,13 @@ def test_a_refused_call_aborts_the_episode_instead_of_being_graded(defence, mode
 
     with pytest.raises((BudgetExceeded, ModelUnavailable)):
         asyncio.run(run_episode(ep, get_defence(defence), model(), ApproveAll()))
+
+
+def test_episode_level_counts_treat_attempts_of_one_episode_as_one_unit():
+    from garm_bench.analysis import _episodes
+
+    rows = [{"episode_id": e, "passed": p} for e, p in [("a", True), ("a", False), ("a", True), ("b", True),
+                                                         ("b", True), ("b", True)]]
+    out = _episodes(rows, lambda r: r["passed"])
+    assert out["n_episodes"] == 2 and out["attempts_per_episode"] == [3]
+    assert out["any_attempt"]["rate"] == 1.0 and out["every_attempt"]["rate"] == 0.5

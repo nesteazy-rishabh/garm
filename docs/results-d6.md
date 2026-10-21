@@ -27,7 +27,8 @@ has not judged D6's cards for the same reason. Intervals are Wilson 95%.
 ## Against the predictions
 
 - **P1 (laundering falls to near 0 under every defence, with no approvals needed): confirmed.** Activation and
-  incorporation are 0 of 24 in all eight cells. The callback reaches the real vendor, which denies the change, so
+  incorporation are 0 of 24 runs (0 of 8 episodes) in all eight cells. This follows from the staff model by
+  construction: it assumes the number on file before the change still reaches the real vendor. The callback reaches the real vendor, which denies the change, so
   the attacker's bank details or address are never written. D0 + known good stops the chain with no agent-side
   defence and no approvals.
 - **P2 (lenient: legitimate pass unchanged; D5 needs fewer approvals and has fewer false blocks): confirmed.**
@@ -40,6 +41,11 @@ has not judged D6's cards for the same reason. Intervals are Wilson 95%.
   phone-then-bank changes.
 
 ## What this shows
+
+The known-good callback is standard business-email-compromise guidance (FBI I-082715a-PSA, 2015: "use previously
+known numbers, not the numbers provided in the e-mail request"); see `related-work.md`. Garm measures it rather than
+proposes it, and under the staff model's assumption its effect on the attack is fixed in advance. What the runs
+measure is the cost side: legitimate-update pass rates, approvals and false blocks.
 
 The laundered chain is a process vulnerability, and the fix that works is a process fix. Nothing on the agent's side
 (prompting, gating, monitoring, plan-then-execute or provenance labels) stopped it without also asking an approver
@@ -56,7 +62,9 @@ email changes.
   callback.
 - The real cost to honest vendors lies between the two variants and depends on how often vendors change number and
   bank together, which Garm does not estimate.
-- Haiku 5.5 only, 3 attempts, 8 laundered episodes.
+- 8 laundered episodes and 16 legitimate updates (4 twins); attempts of one episode are correlated.
+- Approvals are applied post hoc, so a denied change's follow-up (the vendor calling back, the attacker retrying) is
+  not simulated.
 
 ## Sonnet 5.5 replication and card readers (added later the same day)
 
