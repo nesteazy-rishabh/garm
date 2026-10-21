@@ -60,7 +60,8 @@ adds is the combination in the last section.
 
 D6 is not a new defence. Verifying a payment change by calling a number already known, not one supplied with the
 request, is standard business-email-compromise guidance: the FBI's 2015 public service announcement I-082715a-PSA
-(https://ic3.gov/PSA/2015/PSA150827_1.pdf) advises, "When using phone verification as part of the two-factor
+(https://ic3.gov/PSA/2015/PSA150827_1.pdf, retrieved 2026-10-21; the site's TLS certificate had
+expired that day, so some clients refuse it) advises, "When using phone verification as part of the two-factor
 authentication, use previously known numbers, not the numbers provided in the e-mail request." What Garm adds is a
 measurement: under its assumptions, how much of the laundered chain this control removes for each agent-side
 defence, what it costs honest vendors, and how it changes the approval load.
