@@ -81,3 +81,15 @@ episode (4 twin episodes, 8 family-X episodes), with Wilson intervals on episode
   reader.
 - Also reported: how often the 5 samples of one card agree (decision stability), and the same rates under D2 and
   D4, where the card carries no provenance.
+
+**Extension (pre-registered 2026-10-21, after the core results above and before any extension result).** The same
+resampling for the other legitimate-update families (l1 verified bank change, l2 customer email change, l3 corrected
+invoice) under D2, D4 and D5 with the on-file callback, and for l2 under D5 with the known-good callback: 143 more
+cards, the same 5 samples, readers and prompts. Total spend on resampling is capped at US$5; D3 and the D2/D4
+known-good cards are left out for cost.
+- **Prediction:** for every family, defence, reader and prompt, the expected share of runs blocked (a run is blocked
+  if any of its cards is rejected, using each card's sampled approval rate) is within 20 points of the single-decision
+  run-level rate in `results-main.md` (Stronger card reader). Under D5 with the known-good callback, customer email
+  changes are still blocked in at least half of runs by both readers with `strict`.
+- These samples measure the reader's sampling noise. The larger uncertainty is the small number of episodes (4 per
+  family), and the write-up reports both.
