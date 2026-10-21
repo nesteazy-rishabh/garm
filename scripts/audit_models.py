@@ -69,9 +69,9 @@ def bundle() -> str:
     return "\n\n".join(parts)
 
 
-async def audit_all(clients: dict, text: str) -> dict:
+async def audit_all(clients: dict, text: str, max_tokens: int) -> dict:
     async def one(model, client):
-        turn = await client.generate(SYSTEM, [], [{"role": "user", "text": text}], 48000)
+        turn = await client.generate(SYSTEM, [], [{"role": "user", "text": text}], max_tokens)
         return model, turn
 
     return dict(await asyncio.gather(*(one(m, c) for m, c in clients.items())))
@@ -81,6 +81,9 @@ def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--max-spend", type=float, required=True)
     p.add_argument("--tag", default="", help="prefix for the output files, e.g. final-")
+    p.add_argument("--models", nargs="+", help="run only these model ids instead of the default two")
+    p.add_argument("--max-tokens", type=int, default=48000, help="output budget per reviewer")
+    p.add_argument("--no-thinking", action="store_true", help="disable extended thinking (frees the budget for the JSON)")
     args = p.parse_args()
     load_dotenv(ROOT / ".env")
     prices, meta = load_prices(DATA_DIR / "prices.json")
@@ -90,8 +93,10 @@ def main() -> None:
     print(f"bundle: {len(text):,} characters")
     ledger = Ledger(ROOT / "runs" / "ledger.jsonl", args.max_spend, label="audit-models")
     try:
-        clients = {m: AnthropicModel(m, prices[m], ledger, effort="high", thinking=True, stream=True) for m in AUDITORS}
-        for model, turn in asyncio.run(audit_all(clients, text)).items():
+        models = args.models or AUDITORS
+        clients = {m: AnthropicModel(m, prices[m], ledger, effort="high", thinking=not args.no_thinking, stream=True)
+                   for m in models}
+        for model, turn in asyncio.run(audit_all(clients, text, args.max_tokens)).items():
             (OUT / f"{args.tag}{model}.txt").write_text(turn.text)
             try:
                 parsed = json.loads(turn.text[turn.text.index("{"): turn.text.rindex("}") + 1])

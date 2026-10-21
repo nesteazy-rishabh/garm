@@ -94,6 +94,13 @@ measured result that comes out of that setup is the one in finding 1: card-readi
 correctly, and still can't separate an honest outsider from an attacker whose chain the record makes identical. The
 details are in `docs/related-work.md`.
 
+The write-up was checked the way you would check any eval: independently, by models that did not write it. Three
+Claude models (two auditors and Fable 5.1) checked every quantitative claim against the data, and eight models from
+six other vendors (OpenAI, xAI, Moonshot, Meta, DeepSeek, Alibaba) did the same, to control for a reviewer favouring
+its own family's work. They agree the arithmetic holds and the setup is worth something, the most capable reviewers
+are the most skeptical, and between them they flagged several corrections, now applied, one of them in a fix made
+earlier in the same review. The method, the panel, and what they found are in `docs/audit-panel.md`.
+
 ## What it doesn't show
 
 - **A strong attacker.** The direct attacks are templated. The one adaptive-attacker run was weak, because the

@@ -30,8 +30,11 @@ EXTRA = ["runs/main/analysis-regraded.json", "runs/main/analysis-readers.json", 
            for p in ("strict", "base_rate")],
          "runs/ablation/cards.json", "runs/ablation/report.json",
          *[f"runs/audit/{t}{m}.json" for t in ("", "final-") for m in ("claude-opus-5-5", "claude-sonnet-5-5")],
+         "runs/audit/final-claude-fable-5-1.json",
+         *sorted(str(p.relative_to(ROOT)) for p in (ROOT / "runs" / "audit").glob("panel-*.json")),
+         "runs/ledger-openrouter.jsonl",
          *LISTS]
-SECRET = re.compile(rb"sk-ant-[A-Za-z0-9_-]{8,}")
+SECRET = re.compile(rb"sk-(?:ant|or-v1)-[A-Za-z0-9_-]{8,}")
 README = """Garm run data ({day})
 
 Configs, graded results (results.regraded.jsonl is what the docs report), card-reader decisions and analysis files

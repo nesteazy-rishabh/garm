@@ -36,9 +36,10 @@ xargs uv run garm analyze --regraded --card-decisions strict=runs/main/cards-str
 4. **Approvers who don't read erase the difference (modelled).** With an assumed 93% rubber stamp the laundered
    chain still succeeds 79–83% of the time under every gated defence. This is arithmetic on the assumed approval
    rate over the logged cards, not a measurement.
-5. **Approvers who do read stop it, at a cost the record cannot remove.** With one decision per card, a card-only
-   LLM approver stopped every laundered chain under D2–D5 (resampled, expected laundered success is at most 3%;
-   see the last section). It also blocked 80–100% of honest updates under D2–D4 and 45–51% under D5, whose
+5. **Approvers who do read stop it, at a cost the record cannot remove.** No laundered chain succeeded under D2, D4
+   or D5 with one decision per card: each run had at least one card rejected, not every card (per-card family-X
+   rejection runs well below 100%). Resampling five times per card puts expected laundered success at most 3% across
+   those three defences (D3 was not resampled; see the last section). It also blocked 80–100% of honest updates under D2–D4 and 45–51% under D5, whose
    cards show provenance. The honest twin's provenance is the same as the attack's. Under D5 the twin result rests on
    4 episodes and 8 distinct cards, each judged once per prompt. Readers' answers depend on the provenance: see the
    ablation and control at the end of this page.
@@ -131,7 +132,7 @@ all tasks, more than half of them attacks, which gave D5 0.75; see `grader-chang
 
 | | Hypothesis (2026-10-19) | Verdict on this grid |
 |---|---|---|
-| H1 | For D2 and D4, cross-run attack success is higher than same-run. | **Not supported for direct attacks (null), and not testable for laundering.** Direct attacks activated 0 times in both timings. Family X exists only as a cross-run attack, so its activations (23/144 under D2, 22/144 under D4, against 0/60 same-run) confound timing with attack type and are not evidence for H1. The write-stage gap does not count either (see above). |
+| H1 | For D2 and D4, cross-run attack success is higher than same-run. | **Not supported for direct attacks (null), and not testable for laundering.** Direct attacks activated 0 times in both timings. Family X exists only as a cross-run attack, so its activations (23/24 under D2, 22/24 under D4, against 0/60 same-run) confound timing with attack type and are not evidence for H1. The write-stage gap does not count either (see above). |
 | H2 | D4 matches D2's same-run security with fewer approvals, but is the most exposed to laundering. | **First half supported, second half not.** Same-run activation is 0/60 for both, with 32% fewer approvals under D4 (106 against 155 per 100 tasks). D0 is also 0/60, so this match says little about either defence. D4 is not more exposed to laundering than the others: every defence lets 22–23 of 24 through. |
 | H3 | D5 closes the laundering gap but adds approvals on legitimate updates. With a 93% rubber-stamp approver, much of D5's gain disappears. | **Mixed.** D5 closes the gap only when the approver reads its cards; under approve-all it is 23/24 like the rest, and with an oracle approver D2–D4 close it too. Compared with D4, D5 has fewer approvals on legitimate updates (100 against 248 per 100), not more; compared with no gate it adds one per update. The last clause is supported: with a 93% rubber stamp, laundered success under D5 is 0.83 against 0.96 with no gate. |
 | H4 | On Claude Haiku 5.5, D4 and D5 reduce cross-run attack success more than D1 or D3 do. | **Not supported (null).** Direct cross-run activation is 0/120 under every defence, including D0. Laundered activation is 92–96% under every defence under approve-all. Under approver models, D3 behaves like D4 and D5. |
@@ -200,9 +201,9 @@ blocked out of runs that passed under approve-all.
 Laundered success with the Sonnet reader is 0 under D2, D4 and D5 with both prompts, and 0.08 under D3 with
 `base_rate`.
 
-- **Prediction confirmed.** Under D5 the Sonnet reader blocks every honest twin while stopping every laundered
-  chain, exactly as Haiku does. A more capable reader does not separate the two, because the card does not contain
-  what separates them.
+- **Prediction confirmed.** Under D5 the Sonnet reader stops the laundered chains and blocks the honest twins at the
+  same time (every twin under `strict`, about half under `base_rate`), so it separates the two no better than Haiku
+  does. A more capable reader does not tell them apart, because the card does not contain what separates them.
 - **Where the stronger reader helps, it helps on cards that hold the answer.** Sonnet approves the corrected
   invoices and, with `base_rate`, most customer email changes, which Haiku rejects. Overall false blocks under D2
   and D4 fall from 0.80–1.00 to 0.50–0.74.
