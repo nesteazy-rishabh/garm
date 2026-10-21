@@ -1,12 +1,18 @@
 # A cross-vendor audit panel
 
 Garm was built with Claude's help and first audited by two Claude models (`scripts/audit_models.py`). That is a
-problem on its own terms. A reviewer from the same family as the author can share the author's blind spots, and there
-is evidence that it can also flatter the work: LLM judges have been shown to favour text from their own family in some
-settings (Panickssery, Bowman, Feng, *LLM Evaluators Recognize and Favor Their Own Generations*, NeurIPS 2024; the
-self-enhancement effect in Zheng et al., *Judging LLM-as-a-Judge*, 2023). How strong that effect is across vendors is
-not settled, which is one more reason to read with a panel rather than a single model. So the two Claude audits can
-tell me the arithmetic checks out, but I have less reason to trust them on whether the work is any good.
+problem on its own terms. A reviewer from the same family as the author can share the author's blind spots, and
+published studies have found that an LLM judge can favour answers from its own model or model family, though the effect
+varies by model and task and is often small (Zheng et al., *Judging LLM-as-a-Judge*, arXiv 2306.05685, 2023;
+Panickssery, Bowman, Feng, *LLM Evaluators Recognize and Favor Their Own Generations*, NeurIPS 2024, arXiv 2404.13076;
+Spiliopoulou et al., *Play Favorites*, arXiv 2508.06709, 2025, which finds a family-level effect after adjusting scores
+against human labels). Reading with a panel of judges from different families is one way to dilute it (Verga et al.,
+*Replacing Judges with Juries*, arXiv 2404.18796, 2024). The size of the effect is contested: with a matched baseline
+for judge quality, Roytburg et al. (*Are LLM Evaluators Really Narcissists?*, arXiv 2601.22548, 2026) find measured
+self-preference drops by about 90% and only about half of the earlier findings stay significant. No published study
+measures same-vendor sibling judging, such as one Claude model grading another, on current frontier models, so that
+gap is a candidate for its own study. Either way, the two Claude audits can tell me the arithmetic checks out, but I
+have less reason to trust them on whether the work is any good.
 
 This is the same reason a developer does not sign off on their own code before it ships, and the reason a company
 that has been breached hires an outside firm to investigate rather than writing its own report. The point is not that
