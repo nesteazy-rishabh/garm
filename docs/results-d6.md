@@ -2,10 +2,10 @@
 
 **Setup.** As in `design-d6.md`, committed before these runs. Claude Haiku 5.5, 3 attempts, defences D0, D2, D4 and
 D5, each with both known-good callback policies, on the 16 legitimate updates and the 8 laundered (family X)
-episodes. The run cost US$2.37. The `on_file` baseline is the main grid (`results-main.md`), the same episodes and
+episodes. The run cost US$2.39. The `on_file` baseline is the main grid (`results-main.md`), the same episodes and
 model under the default callback process. The planned Sonnet 5.5 runs did not complete: the account's API usage
-limit was reached partway through, and those runs are excluded (`grader-changes.md`). The card-only LLM approver
-has not judged D6's cards for the same reason. Intervals are Wilson 95%.
+limit was reached partway through, and those runs are excluded (`grader-changes.md`); they were redone later the same
+day (last section), when the card-only LLM approvers also judged D6's cards. Intervals are Wilson 95%.
 
 ## Results
 
@@ -77,7 +77,8 @@ The Sonnet 5.5 runs were redone after the account limit was lifted (US$5.55, all
 | D5 + known good, strict | n/a | 12/16 (the 4 twins fail) | 50 |
 
 **Card readers under D6.** With D5 + known good, the card-only LLM approver's false blocks on legitimate updates
-fall from 0.51 (D5, on file) to 0.25, the same on Haiku and Sonnet agents and with both prompts. The twins' cards are
+fall from 0.51 (`strict`) and 0.45 (`base_rate`) under D5 on file to 0.25 with both prompts, the same on Haiku and
+Sonnet agents. The twins' cards are
 gone, because their verification rests on the original number. Every remaining false block is a customer email
 change (family l2): a request from the customer's current address, which policy CU4 allows. The reader
 rejects it because an outsider asked. D6 does not cover customer changes; an analogous control for them would be a

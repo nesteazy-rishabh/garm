@@ -34,8 +34,11 @@ def _to_api_messages(messages: list[dict]) -> list[dict]:
 
 
 class AnthropicModel:
-    def __init__(self, model_id: str, price: Price, ledger: Ledger, effort: str | None = None, max_retries: int = 4):
+    def __init__(self, model_id: str, price: Price, ledger: Ledger, effort: str | None = None, max_retries: int = 4,
+                 thinking: bool = False, stream: bool = False):
         self.model_id = model_id
+        self.thinking = thinking
+        self.stream = stream
         self.price = price
         self.ledger = ledger
         self.effort = effort
@@ -48,16 +51,18 @@ class AnthropicModel:
         kwargs = {}
         if self.effort:
             kwargs["output_config"] = {"effort": self.effort}
+        if self.thinking:
+            kwargs["thinking"] = {"type": "adaptive"}
         started = time.monotonic()
+        request = dict(model=self.model_id, max_tokens=max_tokens,
+                       system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
+                       tools=tools, messages=api_messages, **kwargs)
         try:
-            resp = await self.client.messages.create(
-                model=self.model_id,
-                max_tokens=max_tokens,
-                system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
-                tools=tools,
-                messages=api_messages,
-                **kwargs,
-            )
+            if self.stream:  # required by the SDK for long outputs
+                async with self.client.messages.stream(**request) as s:
+                    resp = await s.get_final_message()
+            else:
+                resp = await self.client.messages.create(**request)
         except Exception as e:
             self.ledger.settle(reservation, 0.0, {"model": self.model_id, "error": type(e).__name__})
             if isinstance(e, anthropic.APIError):

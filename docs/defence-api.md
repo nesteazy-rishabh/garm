@@ -70,5 +70,4 @@ uv run garm validate --split attack                 # oracle, victim and do-noth
 ```
 
 Then run your defence with the scripted victim (see `tests/test_drafts.py` for the pattern) and confirm it stops
-the attacks it is meant to stop. A defence that never fires looks robust on a static suite. AutoDojo found one
-published configuration that had been running with no policies loaded.
+the attacks it is meant to stop. A defence that never fires looks robust on a static suite.

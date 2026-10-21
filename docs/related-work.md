@@ -76,5 +76,8 @@ Taken together, Garm's contribution is a measurement setup rather than a defence
 3. a relational system of record with field-level provenance and a staff process, in a finance back-office setting,
    in which a policy-compliant chain of steps produces a genuine verification for the attacker;
 4. an episode-level account of how a process control (D6) and record-level authority labels (D5) combine.
+5. a measured result about LLM approvers: they act on provenance correctly (removing it roughly halves their
+   rejections, and trusted provenance gets approved every time), and still cannot separate the honest twin from the
+   attack, because the record gives both the same chain (`results-main.md`, provenance ablation).
 
-Its empirical findings are limited by design choices described in `../README.md` (Scope and limitations).
+Its empirical findings are limited by design choices described in `../README.md` (What it doesn't show).

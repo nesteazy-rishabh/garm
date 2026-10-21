@@ -25,7 +25,12 @@ EXTRA = ["runs/main/analysis-regraded.json", "runs/main/analysis-readers.json", 
          "runs/d6/sonnet-dirs.txt", "runs/cards-sonnet-reader-strict.json", "runs/cards-sonnet-reader-base_rate.json",
          *[f"runs/resample/{m}-{p}.json" for m in ("claude-haiku-5-5", "claude-sonnet-5-5")
            for p in ("strict", "base_rate")],
-         "runs/resample/report.json", "runs/resample/per-card.json", *LISTS]
+         "runs/resample/report.json", "runs/resample/per-card.json",
+         *[f"runs/ablation/{m}-{p}.json" for m in ("claude-haiku-5-5", "claude-sonnet-5-5")
+           for p in ("strict", "base_rate")],
+         "runs/ablation/cards.json", "runs/ablation/report.json",
+         *[f"runs/audit/{t}{m}.json" for t in ("", "final-") for m in ("claude-opus-5-5", "claude-sonnet-5-5")],
+         *LISTS]
 SECRET = re.compile(rb"sk-ant-[A-Za-z0-9_-]{8,}")
 README = """Garm run data ({day})
 

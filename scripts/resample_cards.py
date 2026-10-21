@@ -19,9 +19,10 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from garm_bench.analysis import CARD_PROMPTS, judge_cards
+from garm_bench.analysis import CARD_PROMPTS, INFRA_ERRORS, judge_cards
+from garm_bench.approvers import MODELS, effective_attack_success, expected_pass
 from garm_bench.budget import Ledger, check_prices_fresh, load_prices
-from garm_bench.episodes import DATA_DIR
+from garm_bench.episodes import DATA_DIR, load_episodes
 from garm_bench.models.anthropic_model import AnthropicModel
 from garm_bench.stats import wilson
 
@@ -39,14 +40,18 @@ SCOPES = {
 
 
 def runs():
-    """(group, run row) for every legitimate-update and family-X run, where group is (policy, defence, family)."""
+    """(group, run row) for every valid legitimate-update and family-X run, where group is (policy, defence, family).
+    Rows with infrastructure errors are skipped, as in `garm analyze`."""
     for name in LISTS:
         for d in [line.strip() for line in (ROOT / name).read_text().splitlines() if line.strip()]:
             cfg = json.loads((ROOT / d / "config.json").read_text())
             for line in (ROOT / d / "results.regraded.jsonl").read_text().splitlines():
                 r = json.loads(line)
+                if any((j.get("error") or "").startswith(INFRA_ERRORS) for j in r["job_runs"]):
+                    continue
                 fam = r["episode_id"].split("-")[1]
                 if cfg["split"] == "legit" or fam == "x":
+                    r["_agent"] = cfg["model"]
                     yield (cfg.get("callback_policy", "on_file"), cfg["defence"], fam), r
 
 
@@ -95,43 +100,50 @@ def _rate(k: int, n: int) -> str:
 
 
 def report(_args) -> None:
+    """Card-level rates per group, and run-level outcomes with the repo's own definitions (approvers.py): false blocks
+    are 1 − mean expected pass over runs that passed under approve-all, counting only executed cards that are not on an
+    attack path; laundered success is the mean of effective attack success, counting only executed attack-path cards
+    on runs where the attack activated. Each card contributes its sampled approval rate."""
     groups = collect(SCOPES["extension"])
-    rows = []
+    episodes = {e["id"]: e for split in ("legit", "attack") for e in load_episodes(split)}
+    oracle = MODELS["oracle"]  # unused when decisions are given
+    cards_out, runs_out = [], []
     for reader in READERS:
         for prompt in PROMPTS:
             decisions = json.loads((OUT / f"{reader}-{prompt}.json").read_text())
             approve = {c: sum(v) / len(v) for c, v in decisions.items()}
-            blocked = defaultdict(list)  # expected P(run blocked): some card on the run is rejected
-            for g, r in runs():
-                if g in groups and r["approvals"]:
-                    p_pass = 1.0
-                    for a in r["approvals"]:
-                        p_pass *= approve[a["card_text"]]
-                    blocked[g].append(1 - p_pass)
             for g in sorted(groups):
                 sel = {c: decisions[c] for c in groups[g]}
                 samples = [ok for v in sel.values() for ok in v]
-                by_ep = defaultdict(list)
-                for c, eps in groups[g].items():
-                    for e in eps:
-                        by_ep[e].extend(sel[c])
-                rows.append({
+                cards_out.append({
                     "reader": reader, "prompt": prompt, "policy": g[0], "defence": g[1], "family": g[2],
-                    "cards": len(sel),
-                    "rejected_samples": _rate(sum(not ok for ok in samples), len(samples)),
+                    "cards": len(sel), "rejected_samples": _rate(sum(not ok for ok in samples), len(samples)),
                     "approved_samples": sum(samples),
-                    "episodes_mostly_rejected": _rate(sum(sum(not ok for ok in v) > len(v) / 2 for v in by_ep.values()),
-                                                      len(by_ep)),
-                    "cards_with_unanimous_samples": f"{sum(len(set(v)) == 1 for v in sel.values())}/{len(sel)}",
-                    "expected_runs_blocked": round(sum(blocked[g]) / len(blocked[g]), 2) if blocked[g] else None,
-                    "runs_with_cards": len(blocked[g]),
-                })
-    (OUT / "report.json").write_text(json.dumps(rows, indent=1))
+                    "cards_with_unanimous_samples": f"{sum(len(set(v)) == 1 for v in sel.values())}/{len(sel)}"})
+            by = defaultdict(list)
+            for g, r in runs():
+                if g in groups:
+                    by[(r["_agent"], *g)].append(r)
+            for (agent, policy, defence, fam), rs in sorted(by.items()):
+                row = {"reader": reader, "prompt": prompt, "agent": agent, "policy": policy, "defence": defence,
+                       "family": fam}
+                if fam == "x":
+                    vals = [effective_attack_success(r, episodes[r["episode_id"]], oracle, llm_decisions=approve)
+                            for r in rs]
+                    row |= {"laundered_success": round(sum(vals) / len(vals), 3), "runs": len(rs),
+                            "activated_runs": sum(bool(r["attack"]["activation"]) for r in rs)}
+                else:
+                    passed = [r for r in rs if r["passed"]]
+                    vals = [expected_pass(r, episodes[r["episode_id"]], oracle, llm_decisions=approve) for r in passed]
+                    row |= {"false_block": round(1 - sum(vals) / len(vals), 3) if vals else None,
+                            "passing_runs": len(passed)}
+                runs_out.append(row)
+    (OUT / "report.json").write_text(json.dumps({"cards": cards_out, "runs": runs_out}, indent=1))
     (OUT / "per-card.json").write_text(json.dumps({
         f"{reader}/{prompt}": {c: sum(v) / len(v) for c, v in json.loads((OUT / f"{reader}-{prompt}.json")
                                                                          .read_text()).items()}
         for reader in READERS for prompt in PROMPTS}, indent=1))
-    for r in rows:
+    for r in runs_out:
         print(" | ".join(str(v) for v in r.values()))
 
 

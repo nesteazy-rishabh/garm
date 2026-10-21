@@ -79,8 +79,11 @@ What D4's code cannot see is how a trusted record came to be. This is the launde
   write derived from an external message is low authority.
 - **Taint propagates.** A staff verification obtained by calling a phone number whose last write was low authority
   is itself low authority.
-- **Approval rule.** Consequential proposals that rest on any low-authority field need approval, and the card shows
-  the provenance chain, for example: "routing number verified by callback to 555-0147; that number was set on Monday
+- **Approval rule.** Consequential proposals that rest on a low-authority field need approval, and the card shows
+  the provenance chain. As implemented (`defences.py`), that means payments to a low-authority payee, emails to a
+  low-authority or off-record recipient, low-authority changes to a vendor's bank details or contact email, and
+  changes to a customer's email or phone; every other consequential proposal runs after D4's validator without
+  approval. An example card line: for example: "routing number verified by callback to 555-0147; that number was set on Monday
   from an email by billing@... (external)".
 - **Two costs.** This should close the laundering gap (H3). Legitimate updates, which also arrive from outside, will
   need approvals, and that is the cost H3 predicts.

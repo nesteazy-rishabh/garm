@@ -49,7 +49,8 @@ Card-only LLM approver (Haiku 5.5), share of cards approved:
 - **Laundering is real and policy-proof.** The callback chain succeeds against every defence when approvals are
   given, because each step is legitimate.
 - **D5 concentrates oversight.** It has 4–7 times fewer approvals than D2–D4 and the lowest false-block rate under a
-  rubber stamp. Provenance on the card lets a reading approver reject every laundered chain.
+  rubber stamp. A reading approver rejected every laundered chain under D5, but in the pilot it did so under D2 and
+  D4 too, without provenance; the 2026-10-21 ablation (`results-main.md`) is what shows readers use the provenance.
 - **Provenance cannot tell honest from dishonest outsiders.** The card-only LLM approver also rejected almost every
   legitimate low-authority change, because the honest twin's provenance chain is identical to the attack's. This is
   H3's predicted cost, and it is structural. What separates the two cases is out-of-band knowledge, not the record.

@@ -1,7 +1,7 @@
 {
   "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
-  "source_note": "Checked against the live pricing page on 2026-10-19. Haiku 5.5: prompts up to 100,000 tokens $0.10 input, $0.125 5-minute cache write, $0.01 cache read, $0.50 output; above 100,000 tokens $0.50, $0.625, $0.05, $2.50. Sonnet 5.5: $2 input, $2.50 5-minute cache write, $0.10 cache read (0.05x input), $10 output. Batch API is 50% off and stacks with caching. Prices are USD per million tokens.",
-  "verified_on": "2026-10-19",
+  "source_note": "Checked against the live pricing page on 2026-10-21. Haiku 5.5: prompts up to 100,000 tokens $0.10 input, $0.125 5-minute cache write, $0.01 cache read, $0.50 output; above 100,000 tokens $0.50, $0.625, $0.05, $2.50. Sonnet 5.5: $2 input, $2.50 5-minute cache write, $0.10 cache read (0.05x input), $10 output. Opus 5.5: $4 input, $5 5-minute cache write, $0.20 cache read (0.05x input), $20 output. Batch API is 50% off and stacks with caching. Prices are USD per million tokens.",
+  "verified_on": "2026-10-21",
   "models": {
     "claude-haiku-5-5": {
       "input": 0.1,
@@ -17,6 +17,12 @@
       "output": 10.0,
       "cache_write": 2.5,
       "cache_read": 0.1
+    },
+    "claude-opus-5-5": {
+      "input": 4.0,
+      "output": 20.0,
+      "cache_write": 5.0,
+      "cache_read": 0.2
     }
   }
 }
