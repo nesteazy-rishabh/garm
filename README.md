@@ -8,6 +8,9 @@ Released 2026-10-21 (v0.1.1), with the code, the episodes and the run data behin
 adaptive-attacker run. Garm is named for
 the hound that guards the gate of Hel in Norse myth.
 
+There's a shorter write-up of the results, with the defences side by side, at
+[rishabhsingh.ca/garm](https://rishabhsingh.ca/garm/).
+
 ## Why a scheduled back office
 
 A finance back office is a good place to test this, because outsiders are supposed to change its records. A
@@ -277,4 +280,4 @@ tests/            offline validation of every episode and component (no API call
 
 ## License
 
-MIT.
+MIT. Built by Rishabh Singh ([rishabhsingh.ca](https://rishabhsingh.ca/)).
